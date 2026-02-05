@@ -5,4 +5,5 @@
 
 ```matlab
 addpath(genpath(fullfile(pwd,"functions")));
-run("scripts/demo_psd.m");
+run("scripts/nr_dlsch_tx_rx.m");
+```
