@@ -1,0 +1,23 @@
+# MATLAB autosave / temp
+*.asv
+*.m~
+*.autosave
+*.tmp
+
+# MATLAB cache / reports
+slprj/
+sccprj/
+codegen/
+*.mex*
+*.p
+*.slxc
+
+# Live Script backups
+*.mlx.autosave
+
+# Data (keep big files out of git)
+data/
+*.mat
+*.csv
+*.h5
+*.bin
