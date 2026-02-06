@@ -3,10 +3,10 @@
 
 % Log the Command Window Output to a specified directory (logDir)
 % logFile = sprintf('runlog_%s.txt', datestr(now,'yyyymmdd_HHMMSS'));
-logDir = 'logs';
-if ~exist(logDir,'dir'); mkdir(logDir); end
-logFile = fullfile(logDir, sprintf('runlog_%s.txt', datestr(now,'yyyymmdd_HHMMSS')));
-diary(logFile);
+% logDir = 'tests/AustinS/logs';
+% if ~exist(logDir,'dir'); mkdir(logDir); end
+% logFile = fullfile(logDir, sprintf('runlog_%s.txt', datestr(now,'yyyymmdd_HHMMSS')));
+% diary(logFile);
 
 % Specify SNR, number of slots, and perfect channel estimation flag 
 % ------------------------------------------------------------------------------------------------
@@ -551,4 +551,4 @@ end
 
 % Final line for Command Window tracking
 % Ensure to uncomment for logging to work
-diary off;
+% diary off;
