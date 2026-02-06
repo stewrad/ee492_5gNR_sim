@@ -1,12 +1,13 @@
 % DL-SCH and PDSCH Transmit and Receive Processing Chain: 
 % This example shows how to use 5G Toolbox™ features to model a 5G NR physical downlink shared channel (PDSCH) link, including all of the steps from transport block generation to bit decoding at the receiver end.
 
-% Log the Command Window Output to a specified directory (logDir)
+% Test to Log the Command Window Output 
 % logFile = sprintf('runlog_%s.txt', datestr(now,'yyyymmdd_HHMMSS'));
-% logDir = 'tests/AustinS/logs';
-% if ~exist(logDir,'dir'); mkdir(logDir); end
-% logFile = fullfile(logDir, sprintf('runlog_%s.txt', datestr(now,'yyyymmdd_HHMMSS')));
-% diary(logFile);
+logDir = 'logs';
+if ~exist(logDir,'dir'); mkdir(logDir); end
+logFile = fullfile(logDir, sprintf('runlog_%s.txt', datestr(now,'yyyymmdd_HHMMSS')));
+diary(logFile);
+
 
 % Specify SNR, number of slots, and perfect channel estimation flag 
 % ------------------------------------------------------------------------------------------------
@@ -313,10 +314,6 @@ for nSlot = 0:totalNoSlots-1
 
     [dlschLLRs,rxSymbols] = nrPDSCHDecode(carrier,pdsch,pdschEq,noiseEst);
 
-    figName = sprintf('figure1_%s.png', datestr(now,'yyyymmdd_HHMMSS'));
-    exportgraphics(gcf, figName, 'Resolution', 300);
-
-
     % Scale LLRs by CSI
     csi = nrLayerDemap(csi);                                    % CSI layer demapping
     for cwIdx = 1:pdsch.NumCodewords
@@ -363,6 +360,10 @@ for nSlot = 0:totalNoSlots-1
 
     disp("Slot "+(nSlot)+". "+statusReport);
 end % for nSlot = 0:totalNoSlots
+
+imgDir = 'figures';
+if ~exist(imgDir,'dir'); mkdir(imgDir); end
+exportgraphics(gcf, fullfile(imgDir, figName), 'Resolution', 300);
 
 
 % % ========== Results Display ==========
@@ -552,7 +553,5 @@ end
 
 
 
-
 % Final line for Command Window tracking
-% Ensure to uncomment for logging to work
-% diary off;
+diary off;
