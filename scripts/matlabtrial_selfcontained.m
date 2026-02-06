@@ -6,7 +6,7 @@
 % - RV sequence [0 2 3 1]
 % - New data on ACK or RV sequence timeout
 % - Soft combining across retransmissions via nrDLSCHDecoder buffers
-% - Soft buffer flush on timeout
+% - Soft buffer flush on timeout  
 %
 % Includes:
 % - 2-layer 16QAM PDSCH over 8x8 TDL-C channel
