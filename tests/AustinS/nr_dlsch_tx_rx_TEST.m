@@ -3,7 +3,11 @@
 
 % Test to Log the Command Window Output 
 % logFile = sprintf('runlog_%s.txt', datestr(now,'yyyymmdd_HHMMSS'));
+<<<<<<< HEAD
 logDir = 'logs';
+=======
+logDir = 'tests/AustinS/logs';
+>>>>>>> bae0b23 (Implemented simple logging - currently commented out in the nr_dlsch_tx_rx_BASLINE.m at lines 4 thru 9 and line 554.)
 if ~exist(logDir,'dir'); mkdir(logDir); end
 logFile = fullfile(logDir, sprintf('runlog_%s.txt', datestr(now,'yyyymmdd_HHMMSS')));
 diary(logFile);
@@ -361,11 +365,14 @@ for nSlot = 0:totalNoSlots-1
     disp("Slot "+(nSlot)+". "+statusReport);
 end % for nSlot = 0:totalNoSlots
 
+<<<<<<< HEAD
 imgDir = 'figures';
 if ~exist(imgDir,'dir'); mkdir(imgDir); end
 exportgraphics(gcf, fullfile(imgDir, figName), 'Resolution', 300);
 
 
+=======
+>>>>>>> bae0b23 (Implemented simple logging - currently commented out in the nr_dlsch_tx_rx_BASLINE.m at lines 4 thru 9 and line 554.)
 % % ========== Results Display ==========
 % fprintf('\n========== Simulation Results ==========\n');
 % fprintf('HARQ Configuration: Chase Combining (RV=[%s])\n', num2str(rvSeq));

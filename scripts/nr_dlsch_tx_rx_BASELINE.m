@@ -3,10 +3,17 @@
 
 % Log the Command Window Output to a specified directory (logDir)
 % logFile = sprintf('runlog_%s.txt', datestr(now,'yyyymmdd_HHMMSS'));
+<<<<<<< HEAD
 logDir = 'logs';
 if ~exist(logDir,'dir'); mkdir(logDir); end
 logFile = fullfile(logDir, sprintf('runlog_%s.txt', datestr(now,'yyyymmdd_HHMMSS')));
 diary(logFile);
+=======
+% logDir = 'tests/AustinS/logs';
+% if ~exist(logDir,'dir'); mkdir(logDir); end
+% logFile = fullfile(logDir, sprintf('runlog_%s.txt', datestr(now,'yyyymmdd_HHMMSS')));
+% diary(logFile);
+>>>>>>> bae0b23 (Implemented simple logging - currently commented out in the nr_dlsch_tx_rx_BASLINE.m at lines 4 thru 9 and line 554.)
 
 % Specify SNR, number of slots, and perfect channel estimation flag 
 % ------------------------------------------------------------------------------------------------
@@ -551,4 +558,8 @@ end
 
 % Final line for Command Window tracking
 % Ensure to uncomment for logging to work
+<<<<<<< HEAD
 diary off;
+=======
+% diary off;
+>>>>>>> bae0b23 (Implemented simple logging - currently commented out in the nr_dlsch_tx_rx_BASLINE.m at lines 4 thru 9 and line 554.)
