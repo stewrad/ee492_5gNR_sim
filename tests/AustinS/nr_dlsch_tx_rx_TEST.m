@@ -20,11 +20,11 @@ Modulation = "QPSK";                                                            
 NHARQProcesses = 2;                                                                                 % baseline is 2
 rvSeq = [0 2 3 1];                                                                                  % originally set as [0 2 3 1]
 % Specify the number of transmit and receive antennas 
-nTxAnts = 1;                                                                                        % baseline is Tx/Rx = 8 
-nRxAnts = 1;           
-NumLayers = 1;
+nTxAnts = 8;                                                                                        % baseline is Tx/Rx = 8 
+nRxAnts = 8;           
+NumLayers = 2;                                                                                      % Set to 2 for all but Tx/Rx Ant = 1;
 % Specify Channel Model
-DelayProfile = "TDL-C";
+DelayProfile = "TDL-B";
 
 % Define a struct of parameters set in this simulation run 
 % ------------------------------------------------------------------------------------------------
@@ -34,6 +34,7 @@ runParams.NHARQProcesses = NHARQProcesses;
 runParams.rvSeq = rvSeq;
 runParams.nTxAnts = nTxAnts;
 runParams.nRxAnts = nRxAnts;
+runParams.NumLayers = NumLayers;
 runParams.DelayProfile = DelayProfile;
 % runParams.seed = seed;
 % [~, gitHash] = system('git rev-parse HEAD');

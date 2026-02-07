@@ -1,0 +1,127 @@
+
+===== RUN START =====
+Timestamp: 07-Feb-2026 10:47:15
+             SNRdB: 8
+        Modulation: "QPSK"
+    NHARQProcesses: 2
+             rvSeq: [0 2 3 1]
+           nTxAnts: 8
+           nRxAnts: 8
+      DelayProfile: "TDL-A"
+         NumLayers: 2
+
+=====================
+
+
+========== Channel Model Configuration ==========
+Channel Type: TDL-A
+Sample Rate: 15.36 MHz
+Maximum Channel Delay: 12 samples
+Transmit Antennas: 8
+Receive Antennas: 8
+
+--- Path Characteristics ---
+Path Delays (ns): [0.00  11.46  12.07  17.60  13.83  16.12  20.12  17.25  22.85  46.12  56.93  66.73  65.15  74.83  75.36  91.75 122.43 133.74 137.08 143.90 150.20 159.13 289.76]
+Average Path Gains (dB): [-13.40   0.00  -2.20  -4.00  -6.00  -8.20  -9.90 -10.50  -7.50 -15.90  -6.60 -16.70 -12.40 -15.20 -10.80 -11.30 -12.70 -16.20 -18.30 -18.90 -16.60 -19.90 -29.70]
+RMS Delay Spread: 30.00 ns
+Mean Excess Delay: 26.63 ns
+Maximum Doppler Shift: 5.00 Hz
+================================================
+
+Slot 0. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 0. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 1. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 1. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 2. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 2. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 3. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 3. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 4. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 4. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 5. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 5. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 6. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 6. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 7. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 7. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 8. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 8. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 9. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 9. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 10. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 10. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 11. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 11. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 12. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 12. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 13. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 13. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 14. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 14. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 15. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 15. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 16. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 16. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 17. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 17. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 18. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 18. HARQ Proc 0: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 19. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+Slot 19. HARQ Proc 1: CW0: Initial transmission passed  (TBS=12040,RV=0,CR=0.482372).
+
+========================================
+     5G NR HARQ Simulation Results      
+========================================
+
+--- Configuration ---
+HARQ Type: Chase Combining
+RV Sequence: [0  2  3  1]
+Number of HARQ Processes: 2
+Modulation: QPSK
+Number of Layers: 2
+Code Rate: 0.4785
+SNR: 8.00 dB
+Number of Slots: 20
+
+--- Transmission Statistics ---
+Total Transmissions: 20
+Initial Transmissions: 20
+Retransmissions: 0
+Average Transmissions per TB: 1.00
+Retransmission Rate: 0.00%
+
+--- Performance Metrics ---
+Successful Blocks: 20 / 20
+Failed Blocks (after max retx): 0
+Block Error Rate (BLER): 0.0000 (0.00%)
+
+--- Throughput Analysis ---
+Total Bits Transmitted: 240800
+Total Bits Received (success): 240800
+Throughput Efficiency: 100.00%
+Effective Code Rate: 0.4824
+Average Throughput: 0.01 Mbps
+Average Bits per Slot: 12040 bits
+
+--- Spectral Efficiency ---
+Spectral Efficiency: 0.0013 bits/s/Hz
+
+========================================
+
+--- Channel Model Details ---
+Delay Profile: TDL-A
+RMS Delay Spread: 30.00 ns
+Mean Excess Delay: 26.63 ns
+Maximum Channel Delay: 12 samples (0.78 μs)
+
+--- Channel Quality Statistics ---
+Average Channel Gain: -8.51 dB
+Channel Gain Std Dev: 0.23 dB
+Average Condition Number: 9.11
+
+--- SINR Statistics (per layer) ---
+Layer 1 - Mean SINR: 14.74 dB, Std: 0.15 dB
+Layer 2 - Mean SINR: 13.97 dB, Std: 0.44 dB
+
+Coherence Bandwidth (50% corr): 6666.28 kHz
+Coherence Time (50% corr): 35.81 ms
