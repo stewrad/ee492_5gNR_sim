@@ -149,7 +149,7 @@ chInfo = info(channel);
 fprintf('\n===== RUN START =====\n');
 fprintf('Timestamp: %s\n', datestr(now));
 disp(runParams);
-fprintf('Git Commit: %s\n', strtrim(gitHash));
+% fprintf('Git Commit: %s\n', strtrim(gitHash));
 fprintf('=====================\n\n');
 
 % Get additional channel parameters
