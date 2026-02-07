@@ -20,8 +20,9 @@ Modulation = "QPSK";                                                            
 NHARQProcesses = 2;                                                                                 % baseline is 2
 rvSeq = [0 2 3 1];                                                                                  % originally set as [0 2 3 1]
 % Specify the number of transmit and receive antennas 
-nTxAnts = 8;                                                                                        % baseline is Tx/Rx = 8 
-nRxAnts = 8;            
+nTxAnts = 1;                                                                                        % baseline is Tx/Rx = 8 
+nRxAnts = 1;           
+NumLayers = 1;
 % Specify Channel Model
 DelayProfile = "TDL-C";
 
@@ -56,7 +57,7 @@ carrier = nrCarrierConfig;
 % ------------------------------------------------------------------------------------------------
 pdsch = nrPDSCHConfig;
 pdsch.Modulation = Modulation;
-pdsch.NumLayers = 2;
+pdsch.NumLayers = NumLayers;
 pdsch.PRBSet = 0:carrier.NSizeGrid-1;     % Full band allocation
 
 % Set DM-RS parameters 
