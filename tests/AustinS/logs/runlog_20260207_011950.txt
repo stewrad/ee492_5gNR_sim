@@ -1,7 +1,7 @@
 
 ===== RUN START =====
-Timestamp: 06-Feb-2026 18:04:34
-             SNRdB: 8
+Timestamp: 07-Feb-2026 01:19:50
+             SNRdB: 10
         Modulation: "QPSK"
     NHARQProcesses: 16
              rvSeq: [0 2 3 1]
@@ -9,11 +9,6 @@ Timestamp: 06-Feb-2026 18:04:34
            nRxAnts: 8
       DelayProfile: "TDL-C"
 
-Git Commit: '\\wsl.localhost\ubuntu\home\arsewar\ee492_5gNR_sim'
-CMD.EXE was started with the above path as the current directory.
-UNC paths are not supported.  Defaulting to Windows directory.
-'git' is not recognized as an internal or external command,
-operable program or batch file.
 =====================
 
 
@@ -84,7 +79,7 @@ Number of HARQ Processes: 16
 Modulation: QPSK
 Number of Layers: 2
 Code Rate: 0.4785
-SNR: 8.00 dB
+SNR: 10.00 dB
 Number of Slots: 20
 
 --- Transmission Statistics ---
@@ -119,13 +114,13 @@ Mean Excess Delay: 21.87 ns
 Maximum Channel Delay: 11 samples (0.72 μs)
 
 --- Channel Quality Statistics ---
-Average Channel Gain: -8.15 dB
+Average Channel Gain: -8.21 dB
 Channel Gain Std Dev: 0.13 dB
-Average Condition Number: 10.74
+Average Condition Number: 13.52
 
 --- SINR Statistics (per layer) ---
-Layer 1 - Mean SINR: 16.05 dB, Std: 0.19 dB
-Layer 2 - Mean SINR: 13.42 dB, Std: 0.28 dB
+Layer 1 - Mean SINR: 18.06 dB, Std: 0.20 dB
+Layer 2 - Mean SINR: 15.44 dB, Std: 0.29 dB
 
 Coherence Bandwidth (50% corr): 6666.69 kHz
 Coherence Time (50% corr): 35.81 ms

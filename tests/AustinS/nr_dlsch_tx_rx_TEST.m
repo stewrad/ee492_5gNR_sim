@@ -17,7 +17,7 @@ end
 % ------------------------------------------------------------------------------------------------
 SNRdB = 8.0;
 Modulation = "QPSK";                                                                               % must be 'QPSK', '16QAM', '64QAM', '256QAM', '1024QAM'
-NHARQProcesses = 16;
+NHARQProcesses = 2;
 rvSeq = [0 2 3 1];                                                                                  % originally set as [0 2 3 1]
 % Specify the number of transmit and receive antennas 
 nTxAnts = 8;
