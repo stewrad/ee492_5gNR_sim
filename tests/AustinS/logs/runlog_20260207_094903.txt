@@ -1,4 +1,0 @@
-{Error using <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('nr_dlsch_tx_rx_TEST', '\\wsl.localhost\ubuntu\home\arsewar\ee492_5gNR_sim\tests\AustinS\nr_dlsch_tx_rx_TEST.m', 123)" style="font-weight:bold">nr_dlsch_tx_rx_TEST</a> (<a href="matlab: opentoline('\\wsl.localhost\ubuntu\home\arsewar\ee492_5gNR_sim\tests\AustinS\nr_dlsch_tx_rx_TEST.m',123,0)">line 123</a>)
-The number of layers (2) must be smaller than min(nTxAnts,nRxAnts) (1)
-} 
-nr_dlsch_tx_rx_TEST
