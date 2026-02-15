@@ -80,6 +80,17 @@ results/ -->
 
 ---
 
+## Log to Excel for Plotting
+
+For ease of plotting, there is a log_to_excel.py script under scripts/
+
+It does require pandas and openpyxl before use, make sure to install those to your virtualenv or locally before running. 
+
+Usage: 
+```bash
+python3 -m log_to_excel.py --log_dir logs/ --excel_path your/excel/path/here/ --sheet "Results" 
+```
+
 ## Development Workflow
 
 ### Branching (required)
