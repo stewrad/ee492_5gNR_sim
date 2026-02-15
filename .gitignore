@@ -21,3 +21,15 @@ data/
 *.csv
 *.h5
 *.bin
+
+# Python venv / cache / temp
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# OS (optional)
+.DS_Store
+Thumbs.db
