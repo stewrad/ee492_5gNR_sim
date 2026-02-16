@@ -1,0 +1,14 @@
+{'HARQEntity' is used in the following examples:
+  <a href="matlab:matlab.internal.examples.openExample('5g/DLSCHAndPDSCHTransmitAndReceiveProcessingChainExample');">DL-SCH and PDSCH Transmit and Receive Processing Chain</a>
+  <a href="matlab:matlab.internal.examples.openExample('5g/Modeling5GNRTransportChannelsWithHARQExample');">Model 5G NR Transport Channels with HARQ</a>
+  <a href="matlab:matlab.internal.examples.openExample('5g/NewRadioPDSCHThroughputExample');">NR PDSCH Throughput</a>
+  <a href="matlab:matlab.internal.examples.openExample('5g/NewRadioPUSCHThroughputExample');">NR PUSCH Throughput</a>
+  <a href="matlab:matlab.internal.examples.openExample('nrx5g/AINativeFullyConvolutionalReceiverExample');">AI-Native Fully Convolutional Receiver</a>
+  <a href="matlab:matlab.internal.examples.openExample('nrx5g/LinkLevelSimulationfor6GExample');">6G Link-Level Simulation</a>
+  <a href="matlab:matlab.internal.examples.openExample('shared_satcom_5g/NewRadioPDSCHInNTNChannelThroughputExample');">NR NTN PDSCH Throughput</a>
+
+Error in <a href="matlab:matlab.lang.internal.introspective.errorDocCallback('nr_dlsch_tx_rx_BASELINE', '\\wsl.localhost\ubuntu\home\arnold_kalala\ee492_5gNR_sim\scripts\nr_dlsch_tx_rx_BASELINE.m', 113)" style="font-weight:bold">nr_dlsch_tx_rx_BASELINE</a> (<a href="matlab: opentoline('\\wsl.localhost\ubuntu\home\arnold_kalala\ee492_5gNR_sim\scripts\nr_dlsch_tx_rx_BASELINE.m',113,0)">line 113</a>)
+harqEntity = HARQEntity(0:NHARQProcesses-1,rvSeq,pdsch.NumCodewords);
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+} 
+nr_dlsch_tx_rx_BASELINE
