@@ -9,7 +9,9 @@ function refPoints = getConstellationRefPoints(mod)
         case "64QAM"
             nPts = 64;
         case "256QAM"
-            nPts = 256;            
+            nPts = 256;
+        case "1024QAM"
+            nPts = 1024;
     end
     binaryValues = int2bit(0:nPts-1,log2(nPts));
     refPoints = nrSymbolModulate(binaryValues(:),mod);

@@ -1,9 +1,49 @@
 % DL-SCH and PDSCH Transmit and Receive Processing Chain: 
 % This example shows how to use 5G Toolbox™ features to model a 5G NR physical downlink shared channel (PDSCH) link, including all of the steps from transport block generation to bit decoding at the receiver end.
 
+% SET TEST PARAMETERS HERE: 
+% ------------------------------------------------------------------------------------------------
+SNRdB = 12;                                                                                        % baseline is 8.0 dB
+Modulation = "256QAM";                                                                                % must be 'QPSK', '16QAM', '64QAM', '256QAM', '1024QAM'
+NHARQProcesses = 16;                                                                                 % baseline is 2
+rvSeq = [0 2 3 1];                                                                                  % originally set as [0 2 3 1]
+% Specify the number of transmit and receive antennas 
+nTxAnts = 8;                                                                                        % baseline is Tx/Rx = 8 
+nRxAnts = 8;           
+NumLayers = 2;                                                                                      % Set to 2 for all but Tx/Rx Ant = 1;
+% Specify Channel Model
+DelayProfile = "TDL-C";
+
+% OPTIONAL LOGGING VARIABLE: 
+% logging = 1;
+% 
+% if logging == 1
+%     logDir = fullfile(pwd, 'logs');  % <-- use lowercase logs
+%     if ~exist(logDir,'dir')
+%         mkdir(logDir);
+%     end
+%     logFile = fullfile(logDir, sprintf('%s_SNR%.1f_%s_%s.txt', Modulation, SNRdB, DelayProfile, datestr(now,'yyyymmdd_HHMMSS')));
+%     diary(logFile);
+% end
+
+% Define a struct of parameters set in this simulation run 
+% ------------------------------------------------------------------------------------------------
+runParams.SNRdB = SNRdB;
+runParams.Modulation = Modulation;
+runParams.NHARQProcesses = NHARQProcesses;
+runParams.rvSeq = rvSeq;
+runParams.nTxAnts = nTxAnts;
+runParams.nRxAnts = nRxAnts;
+runParams.NumLayers = NumLayers;
+runParams.DelayProfile = DelayProfile;
+% runParams.seed = seed;
+% [~, gitHash] = system('git rev-parse HEAD');
+
+
+
 % Specify SNR, number of slots, and perfect channel estimation flag 
 % ------------------------------------------------------------------------------------------------
-SNRdB = 10;                % SNR in dB
+SNRdB = SNRdB;             % SNR in dB
 totalNoSlots = 20;         % Number of slots to simulate
 perfectEstimation = false; % Perfect synchronization and channel estimation
 rng("default");            % Set default random number generator for repeatability
@@ -17,8 +57,8 @@ carrier = nrCarrierConfig;
 % Create a PDSCH config object. Specify modulation scheme, number of layers.. allocate all resource blocks (RBs) to PDSCH (full band allocation) 
 % ------------------------------------------------------------------------------------------------
 pdsch = nrPDSCHConfig;
-pdsch.Modulation = "16QAM";
-pdsch.NumLayers = 2;
+pdsch.Modulation = Modulation;
+pdsch.NumLayers = NumLayers;
 pdsch.PRBSet = 0:carrier.NSizeGrid-1;     % Full band allocation
 
 % Set DM-RS parameters 
@@ -37,8 +77,10 @@ pdsch.DMRS.DMRSLength = 2;
 % Specify code rate, number of HARQ processes, and redundancy version (RV) sequence values. 
 % Note: to disable HARQ retransmissions, set rvSeq to a fix value (e.g. 0) 
 % ------------------------------------------------------------------------------------------------
-NHARQProcesses = 16;     % Number of parallel HARQ processes
-rvSeq = [0 2 3 1];
+% NHARQProcesses = 16;     % Number of parallel HARQ processes
+NHARQProcesses = NHARQProcesses;     % Number of parallel HARQ processes
+% rvSeq = [0 2 3 1];
+rvSeq = rvSeq; 
 
 % Coding rate
 % Take into account # of codewords when specifying code rate: 
@@ -73,17 +115,24 @@ harqEntity = HARQEntity(0:NHARQProcesses-1,rvSeq,pdsch.NumCodewords);
 % Channel Configuration
 % ------------------------------------------------------------------------------------------------
 % Specify the number of transmit and receive antennas 
-nTxAnts = 8;
-nRxAnts = 8;
+% nTxAnts = 8;
+nTxAnts = nTxAnts;
+% nRxAnts = 8;
+nRxAnts = nRxAnts;
 
 % Check that the number of layers is valid for the number of antennas
 if pdsch.NumLayers > min(nTxAnts,nRxAnts)
     error("The number of layers ("+string(pdsch.NumLayers)+") must be smaller than min(nTxAnts,nRxAnts) ("+string(min(nTxAnts,nRxAnts))+")")
 end
 
+% % Create a channel object 
+% channel = nrTDLChannel;
+% channel.DelayProfile = "TDL-C";
+% channel.NumTransmitAntennas = nTxAnts;
+% channel.NumReceiveAntennas = nRxAnts;
 % Create a channel object 
 channel = nrTDLChannel;
-channel.DelayProfile = "TDL-C";
+channel.DelayProfile = DelayProfile;
 channel.NumTransmitAntennas = nTxAnts;
 channel.NumReceiveAntennas = nRxAnts;
 
@@ -97,6 +146,13 @@ channel.ChannelResponseOutput = 'ofdm-response';
 
 % ========== Extract Channel Model Information ==========
 chInfo = info(channel);
+
+% Print simulated parameters for test log   
+fprintf('\n===== RUN START =====\n');
+fprintf('Timestamp: %s\n', datestr(now));
+disp(runParams);
+% fprintf('Git Commit: %s\n', strtrim(gitHash));
+fprintf('=====================\n\n');
 
 % Get additional channel parameters
 fprintf('\n========== Channel Model Configuration ==========\n');
@@ -353,7 +409,6 @@ for nSlot = 0:totalNoSlots-1
     disp("Slot "+(nSlot)+". "+statusReport);
 end % for nSlot = 0:totalNoSlots
 
-
 % % ========== Results Display ==========
 % fprintf('\n========== Simulation Results ==========\n');
 % fprintf('HARQ Configuration: Chase Combining (RV=[%s])\n', num2str(rvSeq));
@@ -538,3 +593,10 @@ end
 % xlabel('Channel Gain (dB)');
 % ylabel('Block Error Rate');
 % title('Channel Gain vs. Block Error Rate');
+
+
+
+% Final line for Command Window tracking
+if logging == 1
+    diary off;
+end
