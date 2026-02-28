@@ -1,30 +1,45 @@
 % DL-SCH and PDSCH Transmit and Receive Processing Chain: 
 % This example shows how to use 5G Toolbox™ features to model a 5G NR physical downlink shared channel (PDSCH) link, including all of the steps from transport block generation to bit decoding at the receiver end.
 
+% SET TEST PARAMETERS HERE: 
+% ------------------------------------------------------------------------------------------------
+SNRdB = 0;                                                                                        % [0 2 4 6 8 10 12] dB // baseline 8.0dB; 
+Modulation = "QPSK";                                                                                % must be 'QPSK', '16QAM', '64QAM', '256QAM', '1024QAM'; // baseline QPSK
+NHARQProcesses = 1;                                                                                 % [1 2 4 8 16]; // baseline is 16
+rvSeq = [0 1 2 3];                                                                                  % [0 2 3 1], [0 1 2 3] (monotonic), [0 3 2 1] (reverse), [0 2 1 3]; // originally set as [0 2 3 1]
+% Specify the number of transmit and receive antennas 
+nTxAnts = 8;                                                                                        % [1 2 4 8] // baseline is Tx = 8 
+nRxAnts = 8;                                                                                        % [1 2 4 8] // baseline is Rx = 8 
+NumLayers = 2;                                                                                      % Set to 2 for all but Tx/Rx Ant = 1;
+% Specify Channel Model
+DelayProfile = "TDL-C";                                                                             % TDL-A,B,C and CDL-A,B,C // TDL-C baseline
+% DL-SCH and PDSCH Transmit and Receive Processing Chain: 
+% This example shows how to use 5G Toolbox™ features to model a 5G NR physical downlink shared channel (PDSCH) link, including all of the steps from transport block generation to bit decoding at the receiver end.
+
 % OPTIONAL LOGGING VARIABLE: 
 logging = 1;
 
-% Test to Log the Command Window Output 
-% logFile = sprintf('runlog_%s.txt', datestr(now,'yyyymmdd_HHMMSS'));
-if logging == 1 
-    logDir = './logs';
-    if ~exist(logDir,'dir'); mkdir(logDir); end
-    logFile = fullfile(logDir, sprintf('runlog_%s.txt', datestr(now,'yyyymmdd_HHMMSS')));
+if logging == 1
+    logDir = fullfile(pwd, 'logs');  % <-- use lowercase logs
+    if ~exist(logDir,'dir')
+        mkdir(logDir);
+    end
+
+    rvStr  = sprintf('%d', rvSeq);
+    antStr = sprintf('%dx%d', nTxAnts, nRxAnts);
+    
+    logFile = fullfile(logDir, ...
+        sprintf('%s_SNR%.1f_%s_NHARQ%d_rvSeq[%s]_%s_%s.txt', ...
+        Modulation, ...
+        SNRdB, ...
+        DelayProfile, ...
+        NHARQProcesses, ...
+        rvStr, ...
+        antStr, ...
+        datestr(now,'yyyymmdd_HHMMSS')));
+
     diary(logFile);
 end
-
-% SET TEST PARAMETERS HERE: 
-% ------------------------------------------------------------------------------------------------
-SNRdB = 13.0;                                                                                        % baseline is 8.0 dB
-Modulation = "QPSK";                                                                                % must be 'QPSK', '16QAM', '64QAM', '256QAM', '1024QAM'
-NHARQProcesses = 2;                                                                                 % baseline is 2
-rvSeq = [0 2 3 1];                                                                                  % originally set as [0 2 3 1]
-% Specify the number of transmit and receive antennas 
-nTxAnts = 8;                                                                                        % baseline is Tx/Rx = 8 
-nRxAnts = 8;           
-NumLayers = 2;                                                                                      % Set to 2 for all but Tx/Rx Ant = 1;
-% Specify Channel Model
-DelayProfile = "TDL-C";
 
 % Define a struct of parameters set in this simulation run 
 % ------------------------------------------------------------------------------------------------
@@ -331,6 +346,28 @@ for nSlot = 0:totalNoSlots-1
     [pdschRx,pdschHest] = nrExtractResources(pdschIndices,rxGrid,estChGridLayers);
     [pdschEq,csi] = nrEqualizeMMSE(pdschRx,pdschHest,noiseEst);
 
+    % ---- EVM/MER per layer (decision-directed) ----
+    refConst = getConstellationRefPoints(pdsch.Modulation).';  % make it column-ish if needed
+    refConst = refConst(:);
+    
+    for layerIdx = 1:pdsch.NumLayers
+        layerSyms = pdschEq(:, layerIdx);
+    
+        M = evmMerMetricsDD(layerSyms, refConst);
+    
+        % store if you want arrays across slots
+        EVMrms_pct(nSlot+1, layerIdx)  = M.RmsEVM_pct;
+        EVMpk_pct(nSlot+1, layerIdx)   = M.PeakEVM_pct;
+        EVMrms_dB(nSlot+1, layerIdx)   = M.AvgEVM_dB;
+        EVMpk_dB(nSlot+1, layerIdx)    = M.PeakEVM_dB;
+        MERavg_dB(nSlot+1, layerIdx)   = M.AvgMER_dB;
+    
+        % log one line per layer per slot
+        fprintf(['Slot %3d | Layer %d | RMS EVM = %6.2f%% | Peak EVM = %6.2f%% | ' ...
+                 'Avg EVM = %6.2f dB | Peak EVM = %6.2f dB | Avg MER = %6.2f dB\n'], ...
+                 nSlot, layerIdx, M.RmsEVM_pct, M.PeakEVM_pct, M.AvgEVM_dB, M.PeakEVM_dB, M.AvgMER_dB);
+    end
+
     % Estimate instantaneous SINR per layer from equalized symbols
     for layerIdx = 1:pdsch.NumLayers
         layerSymbols = pdschEq(:, layerIdx);
@@ -505,96 +542,6 @@ if isprop(channel, 'MaximumDopplerShift') && channel.MaximumDopplerShift > 0
     coherenceTime_s = 9 / (16 * pi * channel.MaximumDopplerShift);
     fprintf('Coherence Time (50%% corr): %.2f ms\n', coherenceTime_s * 1e3);
 end
-
-% % ========== Performance Visualization ==========
-% figure('Position', [100 100 1200 400]);
-% 
-% % Plot 1: Success rate over time
-% subplot(1,3,1);
-% plot(0:totalNoSlots-1, movmean(perSlotSuccess, 5), 'LineWidth', 2);
-% grid on;
-% xlabel('Slot Number');
-% ylabel('Success Rate (5-slot moving avg)');
-% title('Decoding Success Rate vs. Time');
-% ylim([0 1.1]);
-% 
-% % Plot 2: Cumulative throughput
-% subplot(1,3,2);
-% cumulativeBits = cumsum(perSlotSuccess .* trBlkSizes(1));
-% plot(0:totalNoSlots-1, cumulativeBits / 1e6, 'LineWidth', 2);
-% grid on;
-% xlabel('Slot Number');
-% ylabel('Throughput (Mbits)');
-% title('Cumulative Throughput');
-% 
-% % Plot 3: HARQ retransmission distribution
-% subplot(1,3,3);
-% bar([totalInitialTransmissions, totalRetransmissions]);
-% set(gca, 'XTickLabel', {'Initial TX', 'Retransmissions'});
-% ylabel('Count');
-% title('Transmission Distribution');
-% grid on;
-
-
-% 
-% % ========== Channel Performance Visualization ==========
-% figure('Position', [100 100 1400 800]);
-% 
-% % Plot 1: Channel gain over time
-% subplot(2,3,1);
-% plot(0:totalNoSlots-1, avgChannelGain, 'LineWidth', 1.5);
-% grid on;
-% xlabel('Slot Number');
-% ylabel('Channel Gain (dB)');
-% title('Average Channel Gain vs. Time');
-% 
-% % Plot 2: SINR per layer
-% subplot(2,3,2);
-% hold on;
-% for layerIdx = 1:pdsch.NumLayers
-%     plot(0:totalNoSlots-1, instantaneousSINR(:, layerIdx), ...
-%         'LineWidth', 1.5, 'DisplayName', sprintf('Layer %d', layerIdx));
-% end
-% hold off;
-% grid on;
-% xlabel('Slot Number');
-% ylabel('SINR (dB)');
-% title('Instantaneous SINR per Layer');
-% legend('show');
-% 
-% % Plot 3: Condition number
-% subplot(2,3,3);
-% plot(0:totalNoSlots-1, conditionNumber, 'LineWidth', 1.5);
-% grid on;
-% xlabel('Slot Number');
-% ylabel('Condition Number');
-% title('MIMO Channel Condition Number');
-% 
-% % Plot 4: Power delay profile
-% subplot(2,3,4);
-% stem(chInfo.PathDelays * 1e9, chInfo.AveragePathGains, 'LineWidth', 2, 'MarkerSize', 8);
-% grid on;
-% xlabel('Delay (ns)');
-% ylabel('Average Path Gain (dB)');
-% title(sprintf('%s Power Delay Profile', channel.DelayProfile));
-% 
-% % Plot 5: SINR histogram
-% subplot(2,3,5);
-% histogram(instantaneousSINR(:), 20, 'FaceAlpha', 0.7);
-% grid on;
-% xlabel('SINR (dB)');
-% ylabel('Frequency');
-% title('SINR Distribution (All Layers)');
-% 
-% % Plot 6: Channel gain vs Block errors
-% subplot(2,3,6);
-% scatter(avgChannelGain, perSlotBER, 50, 'filled');
-% grid on;
-% xlabel('Channel Gain (dB)');
-% ylabel('Block Error Rate');
-% title('Channel Gain vs. Block Error Rate');
-
-
 
 % Final line for Command Window tracking
 if logging == 1
