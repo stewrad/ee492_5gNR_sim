@@ -1,9 +1,24 @@
+
+===== RUN START =====
+Timestamp: 24-Feb-2026 19:05:08
+             SNRdB: 8
+        Modulation: "16QAM"
+    NHARQProcesses: 16
+             rvSeq: [0 2 3 1]
+           nTxAnts: 8
+           nRxAnts: 8
+         NumLayers: 2
+      DelayProfile: "TDL-C"
+
+=====================
+
+
 ========== Channel Model Configuration ==========
 Channel Type: TDL-C
 Sample Rate: 15.36 MHz
 Maximum Channel Delay: 11 samples
-Transmit Antennas: 4
-Receive Antennas: 4
+Transmit Antennas: 8
+Receive Antennas: 8
 
 --- Path Characteristics ---
 Path Delays (ns): [0.00   6.30   6.66   6.99   6.53  19.10  19.34  19.68  19.75  23.80  24.64  28.01  36.85  39.25  65.11  81.31 127.77 138.01 164.71 168.23 189.19 199.12 211.28 259.57]
@@ -65,7 +80,7 @@ Number of HARQ Processes: 16
 Modulation: 16QAM
 Number of Layers: 2
 Code Rate: 0.4785
-SNR: 10.00 dB
+SNR: 8.00 dB
 Number of Slots: 20
 
 --- Transmission Statistics ---
@@ -100,13 +115,13 @@ Mean Excess Delay: 21.87 ns
 Maximum Channel Delay: 11 samples (0.72 μs)
 
 --- Channel Quality Statistics ---
-Average Channel Gain: -5.66 dB
-Channel Gain Std Dev: 0.07 dB
-Average Condition Number: 12.50
+Average Channel Gain: -8.14 dB
+Channel Gain Std Dev: 0.14 dB
+Average Condition Number: 12.61
 
 --- SINR Statistics (per layer) ---
-Layer 1 - Mean SINR: 15.41 dB, Std: 0.13 dB
-Layer 2 - Mean SINR: 12.65 dB, Std: 0.10 dB
+Layer 1 - Mean SINR: 16.26 dB, Std: 0.15 dB
+Layer 2 - Mean SINR: 14.18 dB, Std: 0.20 dB
 
 Coherence Bandwidth (50% corr): 6666.69 kHz
 Coherence Time (50% corr): 35.81 ms
