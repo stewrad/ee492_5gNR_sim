@@ -1,3 +1,18 @@
+
+===== RUN START =====
+Timestamp: 24-Feb-2026 19:04:35
+             SNRdB: 6
+        Modulation: "16QAM"
+    NHARQProcesses: 16
+             rvSeq: [0 2 3 1]
+           nTxAnts: 8
+           nRxAnts: 8
+         NumLayers: 2
+      DelayProfile: "TDL-C"
+
+=====================
+
+
 ========== Channel Model Configuration ==========
 Channel Type: TDL-C
 Sample Rate: 15.36 MHz
@@ -65,7 +80,7 @@ Number of HARQ Processes: 16
 Modulation: 16QAM
 Number of Layers: 2
 Code Rate: 0.4785
-SNR: 15.00 dB
+SNR: 6.00 dB
 Number of Slots: 20
 
 --- Transmission Statistics ---
@@ -100,13 +115,13 @@ Mean Excess Delay: 21.87 ns
 Maximum Channel Delay: 11 samples (0.72 μs)
 
 --- Channel Quality Statistics ---
-Average Channel Gain: -8.24 dB
+Average Channel Gain: -8.03 dB
 Channel Gain Std Dev: 0.14 dB
-Average Condition Number: 19.03
+Average Condition Number: 10.06
 
 --- SINR Statistics (per layer) ---
-Layer 1 - Mean SINR: 20.98 dB, Std: 0.17 dB
-Layer 2 - Mean SINR: 18.53 dB, Std: 0.26 dB
+Layer 1 - Mean SINR: 14.57 dB, Std: 0.12 dB
+Layer 2 - Mean SINR: 12.79 dB, Std: 0.18 dB
 
 Coherence Bandwidth (50% corr): 6666.69 kHz
 Coherence Time (50% corr): 35.81 ms
