@@ -33,3 +33,7 @@ __pycache__/
 # OS (optional)
 .DS_Store
 Thumbs.db
+# Liz test outputs
+/tests/Liz/logs/
+/tests/Liz/Figures/
+functions/evmMerMetricsDD.m

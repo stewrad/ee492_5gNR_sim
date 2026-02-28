@@ -13,18 +13,33 @@ nRxAnts = 8;
 NumLayers = 2;                                                                                      % Set to 2 for all but Tx/Rx Ant = 1;
 % Specify Channel Model
 DelayProfile = "TDL-C";
+% DL-SCH and PDSCH Transmit and Receive Processing Chain: 
+% This example shows how to use 5G Toolbox™ features to model a 5G NR physical downlink shared channel (PDSCH) link, including all of the steps from transport block generation to bit decoding at the receiver end.
 
 % OPTIONAL LOGGING VARIABLE: 
-% logging = 1;
-% 
-% if logging == 1
-%     logDir = fullfile(pwd, 'logs');  % <-- use lowercase logs
-%     if ~exist(logDir,'dir')
-%         mkdir(logDir);
-%     end
-%     logFile = fullfile(logDir, sprintf('%s_SNR%.1f_%s_%s.txt', Modulation, SNRdB, DelayProfile, datestr(now,'yyyymmdd_HHMMSS')));
-%     diary(logFile);
-% end
+logging = 1;
+
+if logging == 1
+    logDir = fullfile(pwd, 'logs');  % <-- use lowercase logs
+    if ~exist(logDir,'dir')
+        mkdir(logDir);
+    end
+
+    rvStr  = sprintf('%d', rvSeq);
+    antStr = sprintf('%dx%d', nTxAnts, nRxAnts);
+    
+    logFile = fullfile(logDir, ...
+        sprintf('%s_SNR%.1f_%s_NHARQ%d_rvSeq[%s]_%s_%s.txt', ...
+        Modulation, ...
+        SNRdB, ...
+        DelayProfile, ...
+        NHARQProcesses, ...
+        rvStr, ...
+        antStr, ...
+        datestr(now,'yyyymmdd_HHMMSS')));
+
+    diary(logFile);
+end
 
 % Define a struct of parameters set in this simulation run 
 % ------------------------------------------------------------------------------------------------
@@ -147,7 +162,7 @@ channel.ChannelResponseOutput = 'ofdm-response';
 % ========== Extract Channel Model Information ==========
 chInfo = info(channel);
 
-% Print simulated parameters for test log   
+% Print simulated parameters for test log
 fprintf('\n===== RUN START =====\n');
 fprintf('Timestamp: %s\n', datestr(now));
 disp(runParams);
@@ -214,6 +229,63 @@ instantaneousSINR = zeros(totalNoSlots, pdsch.NumLayers);
 avgChannelGain = zeros(totalNoSlots, 1);
 conditionNumber = zeros(totalNoSlots, 1);
 
+
+% ========== Per-Transmission (Per-Slot) Logging Storage ==========
+perfLog = repmat(struct( ...
+    'slot', 0, ...
+    'isNewTB', false, ...
+    'txBitsThisSlot', 0, ...
+    'rxBitsThisSlot', 0, ...
+    'blkErrCountThisSlot', 0, ...
+    'totalTransmissions', 0, ...
+    'totalInitialTransmissions', 0, ...
+    'totalRetransmissions', 0, ...
+    'successfulBlocks', 0, ...
+    'blockErrors', 0, ...
+    'bler', 0, ...
+    'throughputEfficiencyPct', 0, ...
+    'instThroughputMbps', 0, ...
+    'avgThroughputMbps', 0), totalNoSlots, 1);
+
+% Slot duration for throughput calculations (seconds)
+% (Keep your carrier config as-is; this uses the numerology already set)
+slotDuration_s = 1e-3 / carrier.SlotsPerSubframe;  % 1 subframe = 1 ms
+
+
+% ========== Cumulative performance state (for per-slot logging) ==========
+perfState = struct( ...
+    'totalTxBits', 0, ...
+    'totalRxBits', 0, ...
+    'totalTransmissions', 0, ...
+    'totalInitialTransmissions', 0, ...
+    'totalRetransmissions', 0, ...
+    'blockErrors', 0, ...
+    'successfulBlocks', 0, ...
+    'attemptsTotal', 0, ...
+    'attemptsFailed', 0);
+
+% ========== Per-slot log storage ==========
+% ========== Per-Transmission (Per-Slot) Logging Storage ==========
+perfLog = repmat(struct( ...
+    'slot', 0, ...
+    'isNewTB', false, ...
+    'txBitsThisSlot', 0, ...
+    'rxBitsThisSlot', 0, ...
+    'blkErrCountThisSlot', 0, ...
+    'attemptBLER_thisSlot', 0, ...
+    'attemptBLER_cum', 0, ...
+    'finalBLER', 0, ...
+    'totalTransmissions', 0, ...
+    'totalInitialTransmissions', 0, ...
+    'totalRetransmissions', 0, ...
+    'successfulBlocks', 0, ...
+    'blockErrors', 0, ...
+    'throughputEfficiencyPct', 0, ...
+    'instThroughputMbps', 0, ...
+    'avgThroughputMbps', 0), totalNoSlots, 1);
+
+
+% ================= MAIN SIMULATION LOOP =================
 for nSlot = 0:totalNoSlots-1
     % New slot
     carrier.NSlot = nSlot;
@@ -331,6 +403,28 @@ for nSlot = 0:totalNoSlots-1
     [pdschRx,pdschHest] = nrExtractResources(pdschIndices,rxGrid,estChGridLayers);
     [pdschEq,csi] = nrEqualizeMMSE(pdschRx,pdschHest,noiseEst);
 
+    % ---- EVM/MER per layer (decision-directed) ----
+    refConst = getConstellationRefPoints(pdsch.Modulation).';  % make it column-ish if needed
+    refConst = refConst(:);
+    
+    for layerIdx = 1:pdsch.NumLayers
+        layerSyms = pdschEq(:, layerIdx);
+    
+        M = evmMerMetricsDD(layerSyms, refConst);
+    
+        % store if you want arrays across slots
+        EVMrms_pct(nSlot+1, layerIdx)  = M.RmsEVM_pct;
+        EVMpk_pct(nSlot+1, layerIdx)   = M.PeakEVM_pct;
+        EVMrms_dB(nSlot+1, layerIdx)   = M.AvgEVM_dB;
+        EVMpk_dB(nSlot+1, layerIdx)    = M.PeakEVM_dB;
+        MERavg_dB(nSlot+1, layerIdx)   = M.AvgMER_dB;
+    
+        % log one line per layer per slot
+        fprintf(['Slot %3d | Layer %d | RMS EVM = %6.2f%% | Peak EVM = %6.2f%% | ' ...
+                 'Avg EVM = %6.2f dB | Peak EVM = %6.2f dB | Avg MER = %6.2f dB\n'], ...
+                 nSlot, layerIdx, M.RmsEVM_pct, M.PeakEVM_pct, M.AvgEVM_dB, M.PeakEVM_dB, M.AvgMER_dB);
+    end
+
     % Estimate instantaneous SINR per layer from equalized symbols
     for layerIdx = 1:pdsch.NumLayers
         layerSymbols = pdschEq(:, layerIdx);
@@ -378,6 +472,21 @@ for nSlot = 0:totalNoSlots-1
 
     disp("Slot "+(nSlot)+". "+statusReport);
 
+
+    % ===== Per-transmission (per-slot) metrics snapshot =====
+    [perfState, perfLog(nSlot+1)] = logPerfMetrics(perfState, nSlot, trBlkSizes, blkerr, harqEntity, slotDuration_s);
+
+    % Print a compact line every slot (adjust formatting however you want)
+    fprintf(['[Slot %2d] NewTB=%d TxBits=%6d RxBits=%6d ' ...
+         'AttemptBLER=%.3f CumAttemptBLER=%.3f ' ...
+         'FinalBLER=%.3f Eff=%.1f%% InstThr=%.2f AvgThr=%.2f\n'], ...
+        nSlot, perfLog(nSlot+1).isNewTB, perfLog(nSlot+1).txBitsThisSlot, ...
+        perfLog(nSlot+1).rxBitsThisSlot, ...
+        perfLog(nSlot+1).attemptBLER_thisSlot, perfLog(nSlot+1).attemptBLER_cum, ...
+        perfLog(nSlot+1).finalBLER, perfLog(nSlot+1).throughputEfficiencyPct, ...
+        perfLog(nSlot+1).instThroughputMbps, perfLog(nSlot+1).avgThroughputMbps);
+
+
     % ========== Track Performance Metrics ==========
     totalTransmissions = totalTransmissions + 1;
 
@@ -388,7 +497,7 @@ for nSlot = 0:totalNoSlots-1
         else
             totalRetransmissions = totalRetransmissions + 1;
         end
-        
+
         % Track successful decoding
         if ~blkerr(cwIdx)
             successfulBlocks = successfulBlocks + 1;
@@ -447,12 +556,27 @@ fprintf('Average Transmissions per TB: %.2f\n', ...
 fprintf('Retransmission Rate: %.2f%%\n', ...
     (totalRetransmissions / totalTransmissions) * 100);
 
+% fprintf('\n--- Performance Metrics ---\n');
+% fprintf('Successful Blocks: %d / %d\n', successfulBlocks, totalInitialTransmissions);
+% fprintf('Failed Blocks (after max retx): %d\n', blockErrors);
+% fprintf('Block Error Rate (BLER): %.4f (%.2f%%)\n', ...
+%     blockErrors / totalInitialTransmissions, ...
+%     (blockErrors / totalInitialTransmissions) * 100);
+
+
+
+% --- BLER metrics ---
+finalBLER = blockErrors / max(1,totalInitialTransmissions);              % post-HARQ (what you have now)
+attemptBLER = perfState.attemptsFailed / max(1, perfState.attemptsTotal); % pre-HARQ (counts all failed attempts)
+
 fprintf('\n--- Performance Metrics ---\n');
 fprintf('Successful Blocks: %d / %d\n', successfulBlocks, totalInitialTransmissions);
 fprintf('Failed Blocks (after max retx): %d\n', blockErrors);
-fprintf('Block Error Rate (BLER): %.4f (%.2f%%)\n', ...
-    blockErrors / totalInitialTransmissions, ...
-    (blockErrors / totalInitialTransmissions) * 100);
+
+fprintf('Attempt BLER (pre-HARQ): %.4f (%.2f%%)\n', attemptBLER, attemptBLER*100);
+fprintf('Final BLER (post-HARQ):  %.4f (%.2f%%)\n', finalBLER, finalBLER*100);
+
+
 
 fprintf('\n--- Throughput Analysis ---\n');
 fprintf('Total Bits Transmitted: %d\n', totalTxBits);
