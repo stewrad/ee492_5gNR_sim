@@ -7,7 +7,7 @@ logging = 1;
 % Test to Log the Command Window Output 
 % logFile = sprintf('runlog_%s.txt', datestr(now,'yyyymmdd_HHMMSS'));
 if logging == 1 
-    logDir = 'tests/AustinS/logs';
+    logDir = './logs';
     if ~exist(logDir,'dir'); mkdir(logDir); end
     logFile = fullfile(logDir, sprintf('runlog_%s.txt', datestr(now,'yyyymmdd_HHMMSS')));
     diary(logFile);
@@ -15,7 +15,7 @@ end
 
 % SET TEST PARAMETERS HERE: 
 % ------------------------------------------------------------------------------------------------
-SNRdB = 8.0;                                                                                        % baseline is 8.0 dB
+SNRdB = 13.0;                                                                                        % baseline is 8.0 dB
 Modulation = "QPSK";                                                                                % must be 'QPSK', '16QAM', '64QAM', '256QAM', '1024QAM'
 NHARQProcesses = 2;                                                                                 % baseline is 2
 rvSeq = [0 2 3 1];                                                                                  % originally set as [0 2 3 1]
@@ -24,7 +24,7 @@ nTxAnts = 8;                                                                    
 nRxAnts = 8;           
 NumLayers = 2;                                                                                      % Set to 2 for all but Tx/Rx Ant = 1;
 % Specify Channel Model
-DelayProfile = "TDL-B";
+DelayProfile = "TDL-C";
 
 % Define a struct of parameters set in this simulation run 
 % ------------------------------------------------------------------------------------------------
