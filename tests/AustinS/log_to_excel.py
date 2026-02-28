@@ -244,7 +244,7 @@ def main():
     ap.add_argument("--log_dir", required=True, help="Directory containing runlog_*.txt files")
     ap.add_argument("--excel_path", required=True, help="Path to output .xlsx OR a directory like '.'")
     ap.add_argument("--sheet", default="Results", help="Worksheet name")
-    ap.add_argument("--pattern", default="runlog_*.txt", help="Glob pattern inside log_dir")
+    ap.add_argument("--pattern", default="*.txt", help="Glob pattern inside log_dir")
     ap.add_argument(
         "--dedupe",
         action="store_true",
