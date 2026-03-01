@@ -1,35 +1,47 @@
 % DL-SCH and PDSCH Transmit and Receive Processing Chain: 
 % This example shows how to use 5G Toolbox™ features to model a 5G NR physical downlink shared channel (PDSCH) link, including all of the steps from transport block generation to bit decoding at the receiver end.
 
-% SET TEST PARAMETERS HERE: 
-% ------------------------------------------------------------------------------------------------
-SNRdB = 0;                                                                                        % [0 2 4 6 8 10 12] dB // baseline 8.0dB; 
-Modulation = "QPSK";                                                                                % must be 'QPSK', '16QAM', '64QAM', '256QAM', '1024QAM'; // baseline QPSK
-NHARQProcesses = 1;                                                                                 % [1 2 4 8 16]; // baseline is 16
-rvSeq = [0 1 2 3];                                                                                  % [0 2 3 1], [0 1 2 3] (monotonic), [0 3 2 1] (reverse), [0 2 1 3]; // originally set as [0 2 3 1]
-% Specify the number of transmit and receive antennas 
-nTxAnts = 8;                                                                                        % [1 2 4 8] // baseline is Tx = 8 
-nRxAnts = 8;                                                                                        % [1 2 4 8] // baseline is Rx = 8 
-NumLayers = 2;                                                                                      % Set to 2 for all but Tx/Rx Ant = 1;
-% Specify Channel Model
-DelayProfile = "TDL-C";                                                                             % TDL-A,B,C and CDL-A,B,C // TDL-C baseline
-% DL-SCH and PDSCH Transmit and Receive Processing Chain: 
-% This example shows how to use 5G Toolbox™ features to model a 5G NR physical downlink shared channel (PDSCH) link, including all of the steps from transport block generation to bit decoding at the receiver end.
+% % SET TEST PARAMETERS HERE: 
+% % ------------------------------------------------------------------------------------------------
+% SNRdB = 4.0;                                                                                        % [0 2 4 6 8 10 12] dB // baseline 8.0dB; 
+% Modulation = "QPSK";                                                                             % must be 'QPSK', '16QAM', '64QAM', '256QAM', '1024QAM'; // baseline QPSK
+% NHARQProcesses = 16;                                                                               % [1 2 4 8 16]; // baseline is 16
+% rvSeq = [0 3 2 1];                                                                                 % [0 2 3 1], [0 1 2 3] (monotonic), [0 3 2 1] (reverse), [0 2 1 3]; // originally set as [0 2 3 1]
+% % Specify the number of transmit and receive antennas 
+% nTxAnts = 8;                                                                                       % [1 2 4 8] // baseline is Tx = 8 
+% nRxAnts = 8;                                                                                       % [1 2 4 8] // baseline is Rx = 8
+% NumLayers = 2;                                                                                     % Set to 2 for all but Tx/Rx Ant = 1;
+% % Specify Channel Model
+% DelayProfile = "TDL-C";                                                                            % TDL-A,B,C and CDL-A,B,C // TDL-C baseline
+% % DL-SCH and PDSCH Transmit and Receive Processing Chain: 
+% % This example shows how to use 5G Toolbox™ features to model a 5G NR physical downlink shared channel (PDSCH) link, including all of the steps from transport block generation to bit decoding at the receiver end.
+
+% OPTIONAL PLOTTING VARIABLE:
+dispPlots = 0;
 
 % OPTIONAL LOGGING VARIABLE: 
 logging = 1;
 
 if logging == 1
-    logDir = fullfile(pwd, 'logs');  % <-- use lowercase logs
+    % Define log directory name and location, create if it doesn't exist
+    logDir = fullfile(pwd, 'logs');  
     if ~exist(logDir,'dir')
         mkdir(logDir);
     end
 
+    % Define figures directory name and location, create if it doesn't exist
+    figDir = fullfile(pwd,'figures');
+    if ~exist(figDir,'dir')
+        mkdir(figDir);
+    end
+
+    % Set rvSeq and number of antennas to strings so they can be read in easily as a variable
     rvStr  = sprintf('%d', rvSeq);
     antStr = sprintf('%dx%d', nTxAnts, nRxAnts);
     
+    % logFile base naming convention generation 
     logFile = fullfile(logDir, ...
-        sprintf('%s_SNR%.1f_%s_NHARQ%d_rvSeq[%s]_%s_%s.txt', ...
+        sprintf("%s_SNR%.1f_%s_NHARQ%d_rvSeq[%s]_%s_%s.txt", ...
         Modulation, ...
         SNRdB, ...
         DelayProfile, ...
@@ -37,6 +49,12 @@ if logging == 1
         rvStr, ...
         antStr, ...
         datestr(now,'yyyymmdd_HHMMSS')));
+
+    % Create figures .png with the same base filename as logFile 
+    [~, baseName, ~] = fileparts(logFile);
+    figFile        = fullfile(figDir, baseName + ".png");           % kept for compatibility
+    % figFileChEst   = fullfile(figDir, baseName + "_ChEst.png");
+    figFileConst   = fullfile(figDir, baseName + "_Constellation.png");
 
     diary(logFile);
 end
@@ -162,7 +180,7 @@ channel.ChannelResponseOutput = 'ofdm-response';
 % ========== Extract Channel Model Information ==========
 chInfo = info(channel);
 
-% Print simulated parameters for test log   
+% Print simulated parameters for test log
 fprintf('\n===== RUN START =====\n');
 fprintf('Timestamp: %s\n', datestr(now));
 disp(runParams);
@@ -229,6 +247,63 @@ instantaneousSINR = zeros(totalNoSlots, pdsch.NumLayers);
 avgChannelGain = zeros(totalNoSlots, 1);
 conditionNumber = zeros(totalNoSlots, 1);
 
+
+% ========== Per-Transmission (Per-Slot) Logging Storage ==========
+perfLog = repmat(struct( ...
+    'slot', 0, ...
+    'isNewTB', false, ...
+    'txBitsThisSlot', 0, ...
+    'rxBitsThisSlot', 0, ...
+    'blkErrCountThisSlot', 0, ...
+    'totalTransmissions', 0, ...
+    'totalInitialTransmissions', 0, ...
+    'totalRetransmissions', 0, ...
+    'successfulBlocks', 0, ...
+    'blockErrors', 0, ...
+    'bler', 0, ...
+    'throughputEfficiencyPct', 0, ...
+    'instThroughputMbps', 0, ...
+    'avgThroughputMbps', 0), totalNoSlots, 1);
+
+% Slot duration for throughput calculations (seconds)
+% (Keep your carrier config as-is; this uses the numerology already set)
+slotDuration_s = 1e-3 / carrier.SlotsPerSubframe;  % 1 subframe = 1 ms
+
+
+% ========== Cumulative performance state (for per-slot logging) ==========
+perfState = struct( ...
+    'totalTxBits', 0, ...
+    'totalRxBits', 0, ...
+    'totalTransmissions', 0, ...
+    'totalInitialTransmissions', 0, ...
+    'totalRetransmissions', 0, ...
+    'blockErrors', 0, ...
+    'successfulBlocks', 0, ...
+    'attemptsTotal', 0, ...
+    'attemptsFailed', 0);
+
+% ========== Per-slot log storage ==========
+% ========== Per-Transmission (Per-Slot) Logging Storage ==========
+perfLog = repmat(struct( ...
+    'slot', 0, ...
+    'isNewTB', false, ...
+    'txBitsThisSlot', 0, ...
+    'rxBitsThisSlot', 0, ...
+    'blkErrCountThisSlot', 0, ...
+    'attemptBLER_thisSlot', 0, ...
+    'attemptBLER_cum', 0, ...
+    'finalBLER', 0, ...
+    'totalTransmissions', 0, ...
+    'totalInitialTransmissions', 0, ...
+    'totalRetransmissions', 0, ...
+    'successfulBlocks', 0, ...
+    'blockErrors', 0, ...
+    'throughputEfficiencyPct', 0, ...
+    'instThroughputMbps', 0, ...
+    'avgThroughputMbps', 0), totalNoSlots, 1);
+
+
+% ================= MAIN SIMULATION LOOP =================
 for nSlot = 0:totalNoSlots-1
     % New slot
     carrier.NSlot = nSlot;
@@ -346,23 +421,21 @@ for nSlot = 0:totalNoSlots-1
     [pdschRx,pdschHest] = nrExtractResources(pdschIndices,rxGrid,estChGridLayers);
     [pdschEq,csi] = nrEqualizeMMSE(pdschRx,pdschHest,noiseEst);
 
-    % ---- EVM/MER per layer (decision-directed) ----
-    refConst = getConstellationRefPoints(pdsch.Modulation).';  % make it column-ish if needed
-    refConst = refConst(:);
-    
+    % ---- EVM / MER per layer via evmMerMetricsDD ----
+    refConst_col = getConstellationRefPoints(pdsch.Modulation);
+    refConst_col = refConst_col(:);   % ensure Kx1 column vector
+
     for layerIdx = 1:pdsch.NumLayers
         layerSyms = pdschEq(:, layerIdx);
-    
-        M = evmMerMetricsDD(layerSyms, refConst);
-    
-        % store if you want arrays across slots
-        EVMrms_pct(nSlot+1, layerIdx)  = M.RmsEVM_pct;
-        EVMpk_pct(nSlot+1, layerIdx)   = M.PeakEVM_pct;
-        EVMrms_dB(nSlot+1, layerIdx)   = M.AvgEVM_dB;
-        EVMpk_dB(nSlot+1, layerIdx)    = M.PeakEVM_dB;
-        MERavg_dB(nSlot+1, layerIdx)   = M.AvgMER_dB;
-    
-        % log one line per layer per slot
+
+        M = evmMerMetricsDD(layerSyms, refConst_col);
+
+        EVMrms_pct(nSlot+1, layerIdx) = M.RmsEVM_pct;
+        EVMpk_pct (nSlot+1, layerIdx) = M.PeakEVM_pct;
+        EVMrms_dB (nSlot+1, layerIdx) = M.AvgEVM_dB;
+        EVMpk_dB  (nSlot+1, layerIdx) = M.PeakEVM_dB;
+        MERavg_dB (nSlot+1, layerIdx) = M.AvgMER_dB;
+
         fprintf(['Slot %3d | Layer %d | RMS EVM = %6.2f%% | Peak EVM = %6.2f%% | ' ...
                  'Avg EVM = %6.2f dB | Peak EVM = %6.2f dB | Avg MER = %6.2f dB\n'], ...
                  nSlot, layerIdx, M.RmsEVM_pct, M.PeakEVM_pct, M.AvgEVM_dB, M.PeakEVM_dB, M.AvgMER_dB);
@@ -371,32 +444,32 @@ for nSlot = 0:totalNoSlots-1
     % Estimate instantaneous SINR per layer from equalized symbols
     for layerIdx = 1:pdsch.NumLayers
         layerSymbols = pdschEq(:, layerIdx);
-        refConstellation = getConstellationRefPoints(pdsch.Modulation);
-        
-        % Find nearest constellation point for each symbol
-        [~, symbolDecisions] = min(abs(layerSymbols - refConstellation.'), [], 2);
-        decidedSymbols = refConstellation(symbolDecisions);
-        
-        % Calculate signal and noise power
+
+        % Find nearest constellation point (reuse refConst_col from EVM block)
+        [~, symbolDecisions] = min(abs(layerSymbols - refConst_col.'), [], 2);
+        decidedSymbols = refConst_col(symbolDecisions);
+
         signalPower = mean(abs(decidedSymbols).^2);
-        noisePower = mean(abs(layerSymbols - decidedSymbols).^2);
-        
+        noisePower  = mean(abs(layerSymbols - decidedSymbols).^2);
+
         instantaneousSINR(nSlot+1, layerIdx) = 10*log10(signalPower / noisePower);
     end
 
-    mesh(abs(estChGridLayers(:,:,1,1)));
-    title('Channel Estimate');
-    xlabel('OFDM Symbol');
-    ylabel("Subcarrier");
-    zlabel("Magnitude");
-
-    constPlot.ChannelNames = "Layer "+(pdsch.NumLayers:-1:1);
-    constPlot.ShowLegend = true;
-    % Constellation for the first layer has a higher SNR than that for the
-    % last layer. Flip the layers so that the constellations do not mask
-    % each other.
-    constPlot(fliplr(pdschEq));
-
+    if dispPlots 
+        mesh(abs(estChGridLayers(:,:,1,1)));
+        title('Channel Estimate');
+        xlabel('OFDM Symbol');
+        ylabel("Subcarrier");
+        zlabel("Magnitude");
+    
+        constPlot.ChannelNames = "Layer "+(pdsch.NumLayers:-1:1);
+        constPlot.ShowLegend = true;
+        % Constellation for the first layer has a higher SNR than that for the
+        % last layer. Flip the layers so that the constellations do not mask
+        % each other.
+        constPlot(fliplr(pdschEq));
+    end
+    
     [dlschLLRs,rxSymbols] = nrPDSCHDecode(carrier,pdsch,pdschEq,noiseEst);
 
     % Scale LLRs by CSI
@@ -413,7 +486,19 @@ for nSlot = 0:totalNoSlots-1
 
     statusReport = updateAndAdvance(harqEntity,blkerr,trBlkSizes,pdschInfo.G);    
 
-    disp("Slot "+(nSlot)+". "+statusReport);
+    % ===== Per-transmission (per-slot) metrics snapshot =====
+    [perfState, perfLog(nSlot+1)] = logPerfMetrics(perfState, nSlot, trBlkSizes, blkerr, harqEntity, slotDuration_s);
+
+    % Print a compact line every slot (adjust formatting however you want)
+    fprintf(['Slot %3d | NewTB=%d | TxBits=%6d | RxBits=%6d | ' ...
+         'AttemptBLER=%.3f | CumAttemptBLER=%.3f | ' ...
+         'FinalBLER=%.3f | Eff=%.1f%% | InstThr=%.2f | AvgThr=%.2f\n'], ...
+        nSlot, perfLog(nSlot+1).isNewTB, perfLog(nSlot+1).txBitsThisSlot, ...
+        perfLog(nSlot+1).rxBitsThisSlot, ...
+        perfLog(nSlot+1).attemptBLER_thisSlot, perfLog(nSlot+1).attemptBLER_cum, ...
+        perfLog(nSlot+1).finalBLER, perfLog(nSlot+1).throughputEfficiencyPct, ...
+        perfLog(nSlot+1).instThroughputMbps, perfLog(nSlot+1).avgThroughputMbps);
+
 
     % ========== Track Performance Metrics ==========
     totalTransmissions = totalTransmissions + 1;
@@ -425,7 +510,7 @@ for nSlot = 0:totalNoSlots-1
         else
             totalRetransmissions = totalRetransmissions + 1;
         end
-        
+
         % Track successful decoding
         if ~blkerr(cwIdx)
             successfulBlocks = successfulBlocks + 1;
@@ -444,21 +529,115 @@ for nSlot = 0:totalNoSlots-1
     perSlotBER(nSlot+1) = sum(blkerr) / pdsch.NumCodewords;
 
     disp("Slot "+(nSlot)+". "+statusReport);
+
+    % Cache last-slot data for end-of-run plotting
+    lastEstChGridLayers = estChGridLayers;
+    lastPdschEq         = pdschEq;
 end % for nSlot = 0:totalNoSlots
 
-% % ========== Results Display ==========
-% fprintf('\n========== Simulation Results ==========\n');
-% fprintf('HARQ Configuration: Chase Combining (RV=[%s])\n', num2str(rvSeq));
-% fprintf('SNR: %.2f dB\n', SNRdB);
-% fprintf('Transport Blocks: %d\n', totalNoSlots);
+
+
+
+% ========== Save Channel Estimate and Constellation Figures ==========
+% --- 1. Channel Estimate (mesh of last slot) ---
+% figChEst = figure('Name','Channel Estimate','Visible','off');
+% mesh(abs(lastEstChGridLayers(:,:,1,1)));
+% title('Channel Estimate - Last Slot');
+% xlabel('OFDM Symbol');
+% ylabel('Subcarrier');
+% zlabel('Magnitude');
+% colorbar;
 % 
-% % maxThroughput = sum(trBlkSizes);
-% % totalNumRxBits = sum(decbits,2);
-% 
-% % fprintf('\n--- Overall Performance ---\n');
-% % fprintf('Block Error Rate: %.4f (%.2f%%)\n', blkerr/totalNoSlots, ...
-% %     blkerr/totalNoSlots*100);
-% % fprintf('Throughput: %.2f%%\n', totalNumRxBits*100/maxThroughput);
+% if logging == 1
+%     exportgraphics(figChEst, figFileChEst, 'Resolution', 150);
+%     fprintf('Channel estimate figure saved to: %s\n', figFileChEst);
+% else
+%     exportgraphics(figChEst, fullfile(pwd, 'Channel_Estimate.png'), 'Resolution', 150);
+%     fprintf('Channel estimate figure saved to: %s\n', fullfile(pwd,'Channel_Estimate.png'));
+% end
+% close(figChEst);
+
+% --- 2. All-layer Constellation on a single white-background axes ---
+refConst   = getConstellationRefPoints(pdsch.Modulation);
+refConst   = refConst(:);
+layerColors = [0.15 0.45 0.85;   % Layer 1 – blue
+               0.85 0.33 0.10;   % Layer 2 – orange
+               0.47 0.67 0.19;   % Layer 3 – green  (if ever used)
+               0.64 0.08 0.18];  % Layer 4 – dark red
+
+figConst = figure('Name','Constellation','Visible','off');
+figConst.Position = [100 100 580 560];
+
+% White figure and axes backgrounds
+set(figConst, 'Color', 'white');
+ax = axes('Parent', figConst);
+set(ax, 'Color', 'white', 'XColor', 'black', 'YColor', 'black', ...
+        'GridColor', [0.82 0.82 0.82], 'FontSize', 9);
+hold(ax, 'on');
+
+% Overlay each layer with a distinct colour (plotted first so ref sits on top)
+for lyr = 1:pdsch.NumLayers
+    layerSyms = lastPdschEq(:, lyr);
+    c = layerColors(lyr, :);
+    plot(ax, real(layerSyms), imag(layerSyms), '.', ...
+         'Color', c, 'MarkerSize', 3, ...
+         'DisplayName', sprintf('Layer %d Rx', lyr));
+end
+
+% Reference symbol positions as red '+' markers (on top)
+plot(ax, real(refConst), imag(refConst), 'r+', ...
+     'MarkerSize', 5, 'LineWidth', 0.8, 'DisplayName', 'Reference');
+
+hold(ax, 'off');
+axis(ax, 'equal');
+grid(ax, 'on');
+xlabel(ax, 'In-phase Amplitude',    'Color', 'black');
+ylabel(ax, 'Quadrature Amplitude',  'Color', 'black');
+title(ax, sprintf('Equalized PDSCH Constellation  |  %s  |  SNR = %.1f dB  |  Last Slot', ...
+      pdsch.Modulation, SNRdB), 'Color', 'black');
+
+% Legend (white background, black text)
+lgd = legend(ax, 'Location', 'northeast', 'FontSize', 8);
+set(lgd, 'Color', 'white', 'EdgeColor', 'black', 'TextColor', 'black');
+
+% ---- Combined EVM / MER annotation box (all layers, black text on white) ----
+% Row order matches comm.ConstellationDiagram Measurements panel:
+%   RMS EVM (%)  |  Peak EVM (%)  |  Avg EVM (dB)  |  Peak EVM (dB)  |  Avg MER (dB)
+ann_lines = {};
+for lyr = 1:pdsch.NumLayers
+    rmsEVM  = EVMrms_pct(end, lyr);
+    pkEVM   = EVMpk_pct (end, lyr);
+    evmDB   = EVMrms_dB (end, lyr);
+    pkEvmDB = EVMpk_dB  (end, lyr);
+    merAvg  = MERavg_dB (end, lyr);
+    ann_lines{end+1} = sprintf('--- Layer %d ---',         lyr);           %#ok<SAGROW>
+    ann_lines{end+1} = sprintf('RMS EVM  : %6.2f %%',     rmsEVM);        %#ok<SAGROW>
+    ann_lines{end+1} = sprintf('Peak EVM : %6.2f %%',     pkEVM);         %#ok<SAGROW>
+    ann_lines{end+1} = sprintf('Avg EVM  : %6.2f dB',     evmDB);         %#ok<SAGROW>
+    ann_lines{end+1} = sprintf('Peak EVM : %6.2f dB',     pkEvmDB);       %#ok<SAGROW>
+    ann_lines{end+1} = sprintf('Avg MER  : %6.2f dB',     merAvg);        %#ok<SAGROW>
+    if lyr < pdsch.NumLayers
+        ann_lines{end+1} = '';   % blank separator between layers           %#ok<SAGROW>
+    end
+end
+ann_str = strjoin(ann_lines, '\n');
+
+xlims = xlim(ax); ylims = ylim(ax);
+text(ax, xlims(1) + 0.03*diff(xlims), ylims(1) + 0.04*diff(ylims), ann_str, ...
+     'FontSize', 8, 'FontName', 'Courier New', ...
+     'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'left', ...
+     'Color', 'black', 'BackgroundColor', 'white', 'EdgeColor', 'black', ...
+     'Margin', 4);
+
+if logging == 1
+    exportgraphics(figConst, figFileConst, 'Resolution', 150);
+    fprintf('Constellation figure saved to: %s\n', figFileConst);
+else
+    exportgraphics(figConst, fullfile(pwd, 'Constellation.png'), 'Resolution', 150);
+    fprintf('Constellation figure saved to: %s\n', fullfile(pwd,'Constellation.png'));
+end
+close(figConst);
+
 
 % ========== Enhanced Results Display ==========
 fprintf('\n========================================\n');
@@ -484,12 +663,27 @@ fprintf('Average Transmissions per TB: %.2f\n', ...
 fprintf('Retransmission Rate: %.2f%%\n', ...
     (totalRetransmissions / totalTransmissions) * 100);
 
+% fprintf('\n--- Performance Metrics ---\n');
+% fprintf('Successful Blocks: %d / %d\n', successfulBlocks, totalInitialTransmissions);
+% fprintf('Failed Blocks (after max retx): %d\n', blockErrors);
+% fprintf('Block Error Rate (BLER): %.4f (%.2f%%)\n', ...
+%     blockErrors / totalInitialTransmissions, ...
+%     (blockErrors / totalInitialTransmissions) * 100);
+
+
+
+% --- BLER metrics ---
+finalBLER = blockErrors / max(1,totalInitialTransmissions);              % post-HARQ (what you have now)
+attemptBLER = perfState.attemptsFailed / max(1, perfState.attemptsTotal); % pre-HARQ (counts all failed attempts)
+
 fprintf('\n--- Performance Metrics ---\n');
 fprintf('Successful Blocks: %d / %d\n', successfulBlocks, totalInitialTransmissions);
 fprintf('Failed Blocks (after max retx): %d\n', blockErrors);
-fprintf('Block Error Rate (BLER): %.4f (%.2f%%)\n', ...
-    blockErrors / totalInitialTransmissions, ...
-    (blockErrors / totalInitialTransmissions) * 100);
+
+fprintf('Attempt BLER (pre-HARQ): %.4f (%.2f%%)\n', attemptBLER, attemptBLER*100);
+fprintf('Final BLER (post-HARQ):  %.4f (%.2f%%)\n', finalBLER, finalBLER*100);
+
+
 
 fprintf('\n--- Throughput Analysis ---\n');
 fprintf('Total Bits Transmitted: %d\n', totalTxBits);
@@ -543,7 +737,9 @@ if isprop(channel, 'MaximumDopplerShift') && channel.MaximumDopplerShift > 0
     fprintf('Coherence Time (50%% corr): %.2f ms\n', coherenceTime_s * 1e3);
 end
 
+
 % Final line for Command Window tracking
 if logging == 1
     diary off;
 end
+
