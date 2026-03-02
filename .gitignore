@@ -33,3 +33,9 @@ __pycache__/
 # OS (optional)
 .DS_Store
 Thumbs.db
+
+# (Optional) logs/figures
+tests/AustinS/logs
+tests/AustinS/figures
+logs/
+figures/

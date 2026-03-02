@@ -105,6 +105,8 @@ BASE_COLUMNS = [
     "Retransmission Rate (%)",
     "Successful Blocks",
     "Failed Blocks (after max retx)",
+    "Attempt BLER % (pre-HARQ)",
+    "Final BLER % (post-HARQ)",
     "Block Error Rate (BLER %)",
     "Total Bits Transmitted",
     "Total Bits Received",
@@ -163,11 +165,19 @@ def parse_runlog(text: str, source_file: str) -> Dict[str, Any]:
     )
 
     rr = _re_float(r"Retransmission Rate:\s*([0-9]*\.?[0-9]+)\s*%", text)
-    out["Retransmission Rate"] = rr
+    out["Retransmission Rate (%)"] = rr
 
     out["Successful Blocks"] = _re_int(r"Successful Blocks:\s*([0-9]+)\s*/\s*[0-9]+", text)
     out["Failed Blocks (after max retx)"] = _re_int(r"Failed Blocks \(after max retx\):\s*([0-9]+)", text)
     out["Block Error Rate (BLER %)"] = _re_float(r"Block Error Rate \(BLER\):\s*([0-9]*\.?[0-9]+)", text)
+
+    # Attempt BLER (pre-HARQ) and Final BLER (post-HARQ) from summary section
+    out["Attempt BLER % (pre-HARQ)"] = _re_float(
+        r"Attempt BLER \(pre-HARQ\):\s*[0-9]*\.?[0-9]+\s*\(([0-9]*\.?[0-9]+)%\)", text
+    )
+    out["Final BLER % (post-HARQ)"] = _re_float(
+        r"Final BLER \(post-HARQ\):\s*[0-9]*\.?[0-9]+\s*\(([0-9]*\.?[0-9]+)%\)", text
+    )
 
     out["Total Bits Transmitted"] = _re_int(r"Total Bits Transmitted:\s*([0-9]+)", text)
     out["Total Bits Received"] = _re_int(r"Total Bits Received \(success\):\s*([0-9]+)", text)
@@ -209,6 +219,42 @@ def parse_runlog(text: str, source_file: str) -> Dict[str, Any]:
         layer_idx = int(m.group(1))
         mean_sinr = float(m.group(2))
         out[f"Layer {layer_idx} - Mean SINR"] = mean_sinr
+
+    # --- Per-layer EVM metrics: average across all slots ---
+    # Log line format (one per layer per slot):
+    #   Slot  N | Layer L | RMS EVM = X% | Peak EVM = Y% | Avg EVM = Z dB | Peak EVM = W dB | Avg MER = V dB
+    evm_pattern = re.compile(
+        r"Slot\s+\d+\s*\|\s*Layer\s+(\d+)\s*\|"
+        r"\s*RMS EVM\s*=\s*([\-0-9]*\.?[0-9]+)%"
+        r"\s*\|\s*Peak EVM\s*=\s*([\-0-9]*\.?[0-9]+)%"
+        r"\s*\|\s*Avg EVM\s*=\s*([\-0-9]*\.?[0-9]+)\s*dB"
+        r"\s*\|\s*Peak EVM\s*=\s*([\-0-9]*\.?[0-9]+)\s*dB"
+        r"\s*\|\s*Avg MER\s*=\s*([\-0-9]*\.?[0-9]+)\s*dB"
+    )
+
+    # Accumulate per-layer lists
+    evm_accum: Dict[int, Dict[str, List[float]]] = {}
+    for m in evm_pattern.finditer(text):
+        lyr = int(m.group(1))
+        if lyr not in evm_accum:
+            evm_accum[lyr] = {
+                "rms_pct": [], "peak_pct": [],
+                "avg_db": [], "peak_db": [], "mer_db": []
+            }
+        evm_accum[lyr]["rms_pct"].append(float(m.group(2)))
+        evm_accum[lyr]["peak_pct"].append(float(m.group(3)))
+        evm_accum[lyr]["avg_db"].append(float(m.group(4)))
+        evm_accum[lyr]["peak_db"].append(float(m.group(5)))
+        evm_accum[lyr]["mer_db"].append(float(m.group(6)))
+
+    import statistics
+    for lyr, vals in evm_accum.items():
+        prefix = f"L{lyr}"
+        out[f"{prefix} RMS EVM (%)"]   = statistics.mean(vals["rms_pct"])
+        out[f"{prefix} Peak EVM (%)"]  = statistics.mean(vals["peak_pct"])
+        out[f"{prefix} Avg EVM (dB)"]  = statistics.mean(vals["avg_db"])
+        out[f"{prefix} Peak EVM (dB)"] = statistics.mean(vals["peak_db"])
+        out[f"{prefix} Avg MER (dB)"]  = statistics.mean(vals["mer_db"])
 
     out["Source File"] = os.path.basename(source_file)
     return out
@@ -269,11 +315,26 @@ def main():
     new_df = pd.DataFrame(rows)
 
     # Determine all columns (base + trace + any Layer SINR columns found)
-    layer_cols = sorted(
+    layer_sinr_cols = sorted(
         [c for c in new_df.columns if c.startswith("Layer ") and c.endswith(" - Mean SINR")],
         key=lambda x: int(re.search(r"Layer\s+([0-9]+)", x).group(1)),
     )
-    all_cols = TRACE_COLUMNS + BASE_COLUMNS + layer_cols
+
+    # Per-layer EVM columns: group by layer number, then metric order within each layer
+    evm_metric_order = ["RMS EVM (%)", "Peak EVM (%)", "Avg EVM (dB)", "Peak EVM (dB)", "Avg MER (dB)"]
+    layer_nums = sorted(set(
+        int(re.search(r"L(\d+)", c).group(1))
+        for c in new_df.columns
+        if re.match(r"L\d+ (RMS|Peak|Avg)", c)
+    ))
+    layer_evm_cols = [
+        f"L{lyr} {metric}"
+        for lyr in layer_nums
+        for metric in evm_metric_order
+        if f"L{lyr} {metric}" in new_df.columns
+    ]
+
+    all_cols = TRACE_COLUMNS + BASE_COLUMNS + layer_sinr_cols + layer_evm_cols
 
     new_df = ensure_columns(new_df, all_cols)
     new_df = new_df[all_cols]  # order columns
