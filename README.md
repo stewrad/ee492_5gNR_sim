@@ -88,7 +88,7 @@ It does require pandas and openpyxl before use, make sure to install those to yo
 
 Usage: 
 ```bash
-python3 -m log_to_excel.py --log_dir logs/ --excel_path your/excel/path/here/ --sheet "Results" 
+python3 -m log_to_excel_v2 --log_dir logs/ --excel_path results/results.xlsx 
 ```
 
 ## Development Workflow
