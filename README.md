@@ -90,6 +90,20 @@ Usage:
 ```bash
 python3 -m log_to_excel_v2 --log_dir logs/ --excel_path results/results.xlsx 
 ```
+---
+
+## Creating Charts from Command Window
+
+To plot charts from results.xlsx, use make_charts.py and charts.yml located under scripts
+
+charts.yml can be edited to format chart or copy/paste to make multiple charts at once
+
+Usage from Command Prompt:
+```bash
+python make_charts.py --excel results.xlsx --config charts.yml --out Figures 
+```
+
+---
 
 ## Development Workflow
 
