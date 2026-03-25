@@ -1,0 +1,188 @@
+
+===== RUN START =====
+Timestamp: 24-Mar-2026 20:51:00
+             SNRdB: 0
+        Modulation: "256QAM"
+    NHARQProcesses: 0
+             rvSeq: [0 2 3 1]
+           nTxAnts: 8
+           nRxAnts: 8
+         NumLayers: 2
+      DelayProfile: "TDL-C"
+       disableHARQ: 1
+
+=====================
+
+
+========== Channel Model Configuration ==========
+Channel Type: TDL-C
+Sample Rate: 15.36 MHz
+Maximum Channel Delay: 11 samples
+Transmit Antennas: 8
+Receive Antennas: 8
+
+--- Path Characteristics ---
+Path Delays (ns): [0.00   6.30   6.66   6.99   6.53  19.10  19.34  19.68  19.75  23.80  24.64  28.01  36.85  39.25  65.11  81.31 127.77 138.01 164.71 168.23 189.19 199.12 211.28 259.57]
+Average Path Gains (dB): [-4.40  -1.20  -3.50  -5.20  -2.50   0.00  -2.20  -3.90  -7.40  -7.10 -10.70 -11.10  -5.10  -6.80  -8.70 -13.20 -13.90 -13.90 -15.80 -17.10 -16.00 -15.70 -21.60 -22.80]
+RMS Delay Spread: 30.00 ns
+Mean Excess Delay: 21.87 ns
+Maximum Doppler Shift: 5.00 Hz
+================================================
+
+Slot 0. HARQ disabled - single transmission
+Slot 0. HARQ disabled - single transmission
+Slot 1. HARQ disabled - single transmission
+Slot 1. HARQ disabled - single transmission
+Slot 2. HARQ disabled - single transmission
+Slot 2. HARQ disabled - single transmission
+Slot 3. HARQ disabled - single transmission
+Slot 3. HARQ disabled - single transmission
+Slot 4. HARQ disabled - single transmission
+Slot 4. HARQ disabled - single transmission
+Slot 5. HARQ disabled - single transmission
+Slot 5. HARQ disabled - single transmission
+Slot 6. HARQ disabled - single transmission
+Slot 6. HARQ disabled - single transmission
+Slot 7. HARQ disabled - single transmission
+Slot 7. HARQ disabled - single transmission
+Slot 8. HARQ disabled - single transmission
+Slot 8. HARQ disabled - single transmission
+Slot 9. HARQ disabled - single transmission
+Slot 9. HARQ disabled - single transmission
+Slot 10. HARQ disabled - single transmission
+Slot 10. HARQ disabled - single transmission
+Slot 11. HARQ disabled - single transmission
+Slot 11. HARQ disabled - single transmission
+Slot 12. HARQ disabled - single transmission
+Slot 12. HARQ disabled - single transmission
+Slot 13. HARQ disabled - single transmission
+Slot 13. HARQ disabled - single transmission
+Slot 14. HARQ disabled - single transmission
+Slot 14. HARQ disabled - single transmission
+Slot 15. HARQ disabled - single transmission
+Slot 15. HARQ disabled - single transmission
+Slot 16. HARQ disabled - single transmission
+Slot 16. HARQ disabled - single transmission
+Slot 17. HARQ disabled - single transmission
+Slot 17. HARQ disabled - single transmission
+Slot 18. HARQ disabled - single transmission
+Slot 18. HARQ disabled - single transmission
+Slot 19. HARQ disabled - single transmission
+Slot 19. HARQ disabled - single transmission
+Slot 20. HARQ disabled - single transmission
+Slot 20. HARQ disabled - single transmission
+Slot 21. HARQ disabled - single transmission
+Slot 21. HARQ disabled - single transmission
+Slot 22. HARQ disabled - single transmission
+Slot 22. HARQ disabled - single transmission
+Slot 23. HARQ disabled - single transmission
+Slot 23. HARQ disabled - single transmission
+Slot 24. HARQ disabled - single transmission
+Slot 24. HARQ disabled - single transmission
+Slot 25. HARQ disabled - single transmission
+Slot 25. HARQ disabled - single transmission
+Slot 26. HARQ disabled - single transmission
+Slot 26. HARQ disabled - single transmission
+Slot 27. HARQ disabled - single transmission
+Slot 27. HARQ disabled - single transmission
+Slot 28. HARQ disabled - single transmission
+Slot 28. HARQ disabled - single transmission
+Slot 29. HARQ disabled - single transmission
+Slot 29. HARQ disabled - single transmission
+Slot 30. HARQ disabled - single transmission
+Slot 30. HARQ disabled - single transmission
+Slot 31. HARQ disabled - single transmission
+Slot 31. HARQ disabled - single transmission
+Slot 32. HARQ disabled - single transmission
+Slot 32. HARQ disabled - single transmission
+Slot 33. HARQ disabled - single transmission
+Slot 33. HARQ disabled - single transmission
+Slot 34. HARQ disabled - single transmission
+Slot 34. HARQ disabled - single transmission
+Slot 35. HARQ disabled - single transmission
+Slot 35. HARQ disabled - single transmission
+Slot 36. HARQ disabled - single transmission
+Slot 36. HARQ disabled - single transmission
+Slot 37. HARQ disabled - single transmission
+Slot 37. HARQ disabled - single transmission
+Slot 38. HARQ disabled - single transmission
+Slot 38. HARQ disabled - single transmission
+Slot 39. HARQ disabled - single transmission
+Slot 39. HARQ disabled - single transmission
+Slot 40. HARQ disabled - single transmission
+Slot 40. HARQ disabled - single transmission
+Slot 41. HARQ disabled - single transmission
+Slot 41. HARQ disabled - single transmission
+Slot 42. HARQ disabled - single transmission
+Slot 42. HARQ disabled - single transmission
+Slot 43. HARQ disabled - single transmission
+Slot 43. HARQ disabled - single transmission
+Slot 44. HARQ disabled - single transmission
+Slot 44. HARQ disabled - single transmission
+Slot 45. HARQ disabled - single transmission
+Slot 45. HARQ disabled - single transmission
+Slot 46. HARQ disabled - single transmission
+Slot 46. HARQ disabled - single transmission
+Slot 47. HARQ disabled - single transmission
+Slot 47. HARQ disabled - single transmission
+Slot 48. HARQ disabled - single transmission
+Slot 48. HARQ disabled - single transmission
+Slot 49. HARQ disabled - single transmission
+Slot 49. HARQ disabled - single transmission
+
+========================================
+     5G NR HARQ Simulation Results      
+========================================
+
+--- Configuration ---
+HARQ Type: Disabled
+RV Sequence: [0]
+Number of HARQ Processes: 1
+Modulation: 256QAM
+Number of Layers: 2
+Code Rate: 0.4785
+SNR: 0.00 dB
+Number of Slots: 50
+
+--- Transmission Statistics ---
+Total Transmissions: 50
+Initial Transmissions: 50
+Retransmissions: 0
+Average Transmissions per TB: 1.00
+Retransmission Rate: 0.00%
+
+--- Performance Metrics ---
+Successful Blocks: 0 / 50
+Failed Blocks (after max retx): 50
+Block Error Rate (BLER): 1.0000 (100.00%)
+
+--- Throughput Analysis ---
+Total Bits Transmitted: 2408400
+Total Bits Received (success): 0
+Throughput Efficiency: 0.00%
+Effective Code Rate: 0.0000
+Average Throughput: 0.00 Mbps
+Average Bits per Slot: 0 bits
+
+--- Spectral Efficiency ---
+Spectral Efficiency: 0.0000 bits/s/Hz
+
+========================================
+
+--- Channel Model Details ---
+Delay Profile: TDL-C
+RMS Delay Spread: 30.00 ns
+Mean Excess Delay: 21.87 ns
+Maximum Channel Delay: 11 samples (0.72 μs)
+
+--- Channel Quality Statistics ---
+Average Channel Gain: -7.86 dB
+Channel Gain Std Dev: 0.61 dB
+Average Condition Number: 4.39
+
+--- SINR Statistics (per layer) ---
+Layer 1 - Mean SINR: 21.04 dB, Std: 0.28 dB
+Layer 2 - Mean SINR: 20.31 dB, Std: 0.27 dB
+
+Coherence Bandwidth (50% corr): 6666.69 kHz
+Coherence Time (50% corr): 35.81 ms
