@@ -1,20 +1,20 @@
 % DL-SCH and PDSCH Transmit and Receive Processing Chain: 
 % This example shows how to use 5G Toolbox™ features to model a 5G NR physical downlink shared channel (PDSCH) link, including all of the steps from transport block generation to bit decoding at the receiver end.
 
-% % SET TEST PARAMETERS HERE: 
-% % ------------------------------------------------------------------------------------------------
-% SNRdB = 4.0;                                                                                        % [0 2 4 6 8 10 12] dB // baseline 8.0dB; 
-% Modulation = "QPSK";                                                                             % must be 'QPSK', '16QAM', '64QAM', '256QAM', '1024QAM'; // baseline QPSK
-% NHARQProcesses = 16;                                                                               % [1 2 4 8 16]; // baseline is 16
-% rvSeq = [0 3 2 1];                                                                                 % [0 2 3 1], [0 1 2 3] (monotonic), [0 3 2 1] (reverse), [0 2 1 3]; // originally set as [0 2 3 1]
-% % Specify the number of transmit and receive antennas 
-% nTxAnts = 8;                                                                                       % [1 2 4 8] // baseline is Tx = 8 
-% nRxAnts = 8;                                                                                       % [1 2 4 8] // baseline is Rx = 8
-% NumLayers = 2;                                                                                     % Set to 2 for all but Tx/Rx Ant = 1;
-% % Specify Channel Model
-% DelayProfile = "TDL-C";                                                                            % TDL-A,B,C and CDL-A,B,C // TDL-C baseline
-% % DL-SCH and PDSCH Transmit and Receive Processing Chain: 
-% % This example shows how to use 5G Toolbox™ features to model a 5G NR physical downlink shared channel (PDSCH) link, including all of the steps from transport block generation to bit decoding at the receiver end.
+% SET TEST PARAMETERS HERE: 
+% ------------------------------------------------------------------------------------------------
+SNRdB = 4.0;                                                                                        % [0 2 4 6 8 10 12] dB // baseline 8.0dB; 
+Modulation = "QPSK";                                                                             % must be 'QPSK', '16QAM', '64QAM', '256QAM', '1024QAM'; // baseline QPSK
+NHARQProcesses = 16;                                                                               % [1 2 4 8 16]; // baseline is 16
+rvSeq = [0 3 2 1];                                                                                 % [0 2 3 1], [0 1 2 3] (monotonic), [0 3 2 1] (reverse), [0 2 1 3]; // originally set as [0 2 3 1]
+% Specify the number of transmit and receive antennas 
+nTxAnts = 8;                                                                                       % [1 2 4 8] // baseline is Tx = 8 
+nRxAnts = 8;                                                                                       % [1 2 4 8] // baseline is Rx = 8
+NumLayers = 2;                                                                                     % Set to 2 for all but Tx/Rx Ant = 1;
+% Specify Channel Model
+DelayProfile = "TDL-C";                                                                            % TDL-A,B,C and CDL-A,B,C // TDL-C baseline
+% DL-SCH and PDSCH Transmit and Receive Processing Chain: 
+% This example shows how to use 5G Toolbox™ features to model a 5G NR physical downlink shared channel (PDSCH) link, including all of the steps from transport block generation to bit decoding at the receiver end.
 
 % OPTIONAL PLOTTING VARIABLE:
 dispPlots = 0;
@@ -77,7 +77,7 @@ runParams.DelayProfile = DelayProfile;
 % Specify SNR, number of slots, and perfect channel estimation flag 
 % ------------------------------------------------------------------------------------------------
 SNRdB = SNRdB;             % SNR in dB
-totalNoSlots = 20;         % Number of slots to simulate
+totalNoSlots = 50;         % Number of slots to simulate
 perfectEstimation = false; % Perfect synchronization and channel estimation
 rng("default");            % Set default random number generator for repeatability
 
@@ -511,9 +511,12 @@ for nSlot = 0:totalNoSlots-1
             totalRetransmissions = totalRetransmissions + 1;
         end
 
+        tbDelivered = false(pdsch.NumCodewords, NHARQProcesses);
+
         % Track successful decoding
         if ~blkerr(cwIdx)
             successfulBlocks = successfulBlocks + 1;
+            tbDelivered(cwIdx, harqId) = true;
             totalRxBits = totalRxBits + trBlkSizes(cwIdx);
             perSlotSuccess(nSlot+1) = 1;
         else
@@ -660,8 +663,10 @@ fprintf('Initial Transmissions: %d\n', totalInitialTransmissions);
 fprintf('Retransmissions: %d\n', totalRetransmissions);
 fprintf('Average Transmissions per TB: %.2f\n', ...
     totalTransmissions / totalInitialTransmissions);
+% fprintf('Retransmission Rate: %.2f%%\n', ...
+%     (totalRetransmissions / totalTransmissions) * 100);
 fprintf('Retransmission Rate: %.2f%%\n', ...
-    (totalRetransmissions / totalTransmissions) * 100);
+    (totalRetransmissions / max(1,totalInitialTransmissions)) * 100);
 
 % fprintf('\n--- Performance Metrics ---\n');
 % fprintf('Successful Blocks: %d / %d\n', successfulBlocks, totalInitialTransmissions);
@@ -673,7 +678,8 @@ fprintf('Retransmission Rate: %.2f%%\n', ...
 
 
 % --- BLER metrics ---
-finalBLER = blockErrors / max(1,totalInitialTransmissions);              % post-HARQ (what you have now)
+% finalBLER = blockErrors / max(1,totalInitialTransmissions);              % post-HARQ (what you have now)
+finalBLER = (totalInitialTransmissions - successfulBlocks) / totalInitialTransmissions;
 attemptBLER = perfState.attemptsFailed / max(1, perfState.attemptsTotal); % pre-HARQ (counts all failed attempts)
 
 fprintf('\n--- Performance Metrics ---\n');
