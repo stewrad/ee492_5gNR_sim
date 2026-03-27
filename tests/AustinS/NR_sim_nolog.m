@@ -672,10 +672,8 @@ logBuffer(end+1) = sprintf('Initial Transmissions: %d', totalInitialTransmission
 logBuffer(end+1) = sprintf('Retransmissions: %d', totalRetransmissions);
 logBuffer(end+1) = sprintf('Average Transmissions per TB: %.2f', ...
     totalTransmissions / totalInitialTransmissions);
-% logBuffer(end+1) = sprintf('Retransmission Rate: %.2f%%', ...
-%     (totalRetransmissions / totalTransmissions) * 100);
 logBuffer(end+1) = sprintf('Retransmission Rate: %.2f%%', ...
-    (totalRetransmissions / max(1,totalInitialTransmissions)) * 100);
+    (totalRetransmissions / max(1,totalInitialTransmissions + totalRetransmissions)) * 100);
 
 % logBuffer(end+1) = sprintf('\n--- Performance Metrics ---\n');
 % logBuffer(end+1) = sprintf('Successful Blocks: %d / %d\n', successfulBlocks, totalInitialTransmissions);

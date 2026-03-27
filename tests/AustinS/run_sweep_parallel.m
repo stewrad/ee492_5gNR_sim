@@ -10,7 +10,7 @@ sweepTimer = tic;
 SNRdB_vals          = [0 2 4 6 8 10 12];
 Modulation_vals     = {"QPSK","16QAM","64QAM","256QAM","1024QAM"};
 NHARQProcesses_vals = [1];  %[1 2 4 8 16];
-rvSeq_vals          = {[0 2 3 1], [0];} %, [0 1 2 3], [0 3 2 1], [0 2 1 3]};
+rvSeq_vals          = {[0 2 3 1], [0 0 0 0]}; %, [0 1 2 3], [0 3 2 1], [0 2 1 3]};
 nTxAnts_vals        = [2 8];
 nRxAnts_vals        = [2 8];
 DelayProfile_vals   = {"TDL-C"}; %{"TDL-A","TDL-B","TDL-C"};
@@ -35,7 +35,7 @@ fprintf('  Total combinations: %d\n', totalRuns);
 fprintf('========================================================\n\n');
 
 %% Start or reset parallel pool
-numWorkers = 8;   % change to 3 if desired
+numWorkers = 12;   % change to 3 if desired
 
 poolobj = gcp('nocreate');
 if isempty(poolobj)
@@ -148,6 +148,7 @@ fprintf('========================================================\n');
 
 %% Local functions
 function updateProgress(~)
+    runTime = tic;
     persistent count
     if isempty(count)
         count = 0;
@@ -157,6 +158,7 @@ function updateProgress(~)
 
     if mod(count,25) == 0
         fprintf('Completed %d runs...\n', count);
+        fprintf('Time per 25: (%.1f s)', toc(runTime));
     end
 end
 

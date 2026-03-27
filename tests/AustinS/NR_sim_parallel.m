@@ -51,8 +51,7 @@ if logging == 1
         mkdir(figDir);
     end
 
-    rvStr  = sprintf('%d_', rvSeq);
-    rvStr(end) = [];  % remove trailing underscore
+    rvStr  = sprintf('%d', rvSeq);
     antStr = sprintf('%dx%d', nTxAnts, nRxAnts);
 
     ts = char(datetime('now','Format','yyyyMMdd_HHmmss'));
@@ -152,7 +151,7 @@ try
         logBuffer(end+1) = sprintf('%15s: %g', 'SNRdB', SNRdB);
         logBuffer(end+1) = sprintf('%15s: "%s"', 'Modulation', Modulation);
         logBuffer(end+1) = sprintf('%15s: %d', 'NHARQProcesses', NHARQProcesses);
-        logBuffer(end+1) = sprintf('%15s: [%s]', 'rvSeq', num2str(rvSeq));
+        logBuffer(end+1) = sprintf('%15s: [%s]', 'rvSeq', strjoin(string(rvSeq), ' '));
         logBuffer(end+1) = sprintf('%15s: %d', 'nTxAnts', nTxAnts);
         logBuffer(end+1) = sprintf('%15s: %d', 'nRxAnts', nRxAnts);
         logBuffer(end+1) = sprintf('%15s: %d', 'NumLayers', NumLayers);
@@ -519,7 +518,7 @@ try
 
     logBuffer(end+1) = sprintf('\n--- Configuration ---');
     logBuffer(end+1) = sprintf('HARQ Type: Chase Combining');
-    logBuffer(end+1) = sprintf('RV Sequence: [%s]', num2str(rvSeq));
+    logBuffer(end+1) = sprintf('RV Sequence: [%s]', strjoin(string(rvSeq), ' '));
     logBuffer(end+1) = sprintf('Number of HARQ Processes: %d', NHARQProcesses);
     logBuffer(end+1) = sprintf('Modulation: %s', pdsch.Modulation);
     logBuffer(end+1) = sprintf('Number of Layers: %d', pdsch.NumLayers);
@@ -534,7 +533,7 @@ try
     logBuffer(end+1) = sprintf('Average Transmissions per TB: %.2f', ...
         totalTransmissions / max(1,totalInitialTransmissions));
     logBuffer(end+1) = sprintf('Retransmission Rate: %.2f%%', ...
-        (totalRetransmissions / max(1,totalInitialTransmissions)) * 100);
+        (totalRetransmissions / max(1,totalInitialTransmissions + totalRetransmissions)) * 100);
 
     finalBLER = (totalInitialTransmissions - successfulBlocks) / max(1,totalInitialTransmissions);
     attemptBLER = perfState.attemptsFailed / max(1, perfState.attemptsTotal);

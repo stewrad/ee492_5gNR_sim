@@ -200,10 +200,10 @@ def plot_chart(df: pd.DataFrame, spec: ChartSpec, out_dir: str) -> str:
 
 def main():
     p = argparse.ArgumentParser(description="Generate charts from Excel using a config file.")
-    p.add_argument("--excel", required=True, help="Path to input .xlsx")
-    p.add_argument("--sheet", default=None, help="Sheet name (default: first sheet)")
-    p.add_argument("--config", required=True, help="Path to config .yml/.yaml or .json")
-    p.add_argument("--out", default="charts_out", help="Output directory for PNGs")
+    p.add_argument("-e", "--excel", required=True, help="Path to input .xlsx")
+    p.add_argument("-s", "--sheet", default=None, help="Sheet name (default: first sheet)")
+    p.add_argument("-c", "--config", required=True, help="Path to config .yml/.yaml or .json")
+    p.add_argument("-o", "--out", default="charts_out", help="Output directory for PNGs")
     args = p.parse_args()
 
     # Read excel
