@@ -267,7 +267,7 @@ def ensure_columns(df: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
     return df
 
 
-def normalize_excel_path(excel_path: str) -> str:
+def normalize_excel_path(excel_path: str, excel_name: str) -> str:
     """
     If excel_path is a directory (e.g. "."), create a default filename inside it.
     Also ensure .xlsx extension.
@@ -276,7 +276,7 @@ def normalize_excel_path(excel_path: str) -> str:
 
     # If they passed a directory, create default filename inside it
     if os.path.isdir(p):
-        p = os.path.join(p, "runlog_results.xlsx")
+        p = os.path.join(p, excel_name)
 
     # If they passed something without extension, add .xlsx
     if not p.lower().endswith(".xlsx"):
@@ -287,9 +287,10 @@ def normalize_excel_path(excel_path: str) -> str:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--log_dir", required=True, help="Directory containing runlog_*.txt files")
-    ap.add_argument("--excel_path", required=True, help="Path to output .xlsx OR a directory like '.'")
-    ap.add_argument("--sheet", default="Results", help="Worksheet name")
+    ap.add_argument("-d", "--log_dir", required=True, help="Directory containing runlog_*.txt files")
+    ap.add_argument("-ex", "--excel_path", required=True, help="Path to output .xlsx OR a directory like '.'")
+    ap.add_argument("-fname", "--excel_name", default="runlog_results.xlsx", help="Excel file name")
+    ap.add_argument("-sn", "--sheet", default="Results", help="Worksheet name")
     ap.add_argument("--pattern", default="*.txt", help="Glob pattern inside log_dir")
     ap.add_argument(
         "--dedupe",
@@ -300,7 +301,7 @@ def main():
 
     # Normalize paths so "." works reliably
     args.log_dir = os.path.abspath(os.path.expanduser(args.log_dir))
-    args.excel_path = normalize_excel_path(args.excel_path)
+    args.excel_path = normalize_excel_path(args.excel_path, args.excel_name)
 
     files = sorted(glob.glob(os.path.join(args.log_dir, args.pattern)))
     if not files:
