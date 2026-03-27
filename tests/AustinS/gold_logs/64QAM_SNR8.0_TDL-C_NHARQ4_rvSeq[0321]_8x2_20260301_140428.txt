@@ -1,0 +1,169 @@
+
+===== RUN START =====
+Timestamp: 01-Mar-2026 14:04:28
+             SNRdB: 8
+        Modulation: "64QAM"
+    NHARQProcesses: 4
+             rvSeq: [0 3 2 1]
+           nTxAnts: 8
+           nRxAnts: 2
+         NumLayers: 2
+      DelayProfile: "TDL-C"
+
+=====================
+
+
+========== Channel Model Configuration ==========
+Channel Type: TDL-C
+Sample Rate: 15.36 MHz
+Maximum Channel Delay: 11 samples
+Transmit Antennas: 8
+Receive Antennas: 2
+
+--- Path Characteristics ---
+Path Delays (ns): [0.00   6.30   6.66   6.99   6.53  19.10  19.34  19.68  19.75  23.80  24.64  28.01  36.85  39.25  65.11  81.31 127.77 138.01 164.71 168.23 189.19 199.12 211.28 259.57]
+Average Path Gains (dB): [-4.40  -1.20  -3.50  -5.20  -2.50   0.00  -2.20  -3.90  -7.40  -7.10 -10.70 -11.10  -5.10  -6.80  -8.70 -13.20 -13.90 -13.90 -15.80 -17.10 -16.00 -15.70 -21.60 -22.80]
+RMS Delay Spread: 30.00 ns
+Mean Excess Delay: 21.87 ns
+Maximum Doppler Shift: 5.00 Hz
+================================================
+
+Slot   0 | Layer 1 | RMS EVM =  13.41% | Peak EVM = 112.09% | Avg EVM = -17.45 dB | Peak EVM =   0.99 dB | Avg MER =  17.45 dB
+Slot   0 | Layer 2 | RMS EVM =  20.12% | Peak EVM = 204.78% | Avg EVM = -13.93 dB | Peak EVM =   6.23 dB | Avg MER =  13.93 dB
+Slot   0 | NewTB=1 | TxBits= 35856 | RxBits=     0 | AttemptBLER=1.000 | CumAttemptBLER=1.000 | FinalBLER=0.000 | Eff=0.0% | InstThr=0.00 | AvgThr=0.00
+Slot 0. HARQ Proc 0: CW0: Initial transmission failed  (TBS=35856,RV=0,CR=0.478846).
+Slot   1 | Layer 1 | RMS EVM =  13.71% | Peak EVM = 140.65% | Avg EVM = -17.26 dB | Peak EVM =   2.96 dB | Avg MER =  17.26 dB
+Slot   1 | Layer 2 | RMS EVM =  19.26% | Peak EVM = 172.83% | Avg EVM = -14.30 dB | Peak EVM =   4.75 dB | Avg MER =  14.30 dB
+Slot   1 | NewTB=1 | TxBits= 35856 | RxBits=     0 | AttemptBLER=1.000 | CumAttemptBLER=1.000 | FinalBLER=0.000 | Eff=0.0% | InstThr=0.00 | AvgThr=0.00
+Slot 1. HARQ Proc 1: CW0: Initial transmission failed  (TBS=35856,RV=0,CR=0.478846).
+Slot   2 | Layer 1 | RMS EVM =  13.94% | Peak EVM = 143.74% | Avg EVM = -17.12 dB | Peak EVM =   3.15 dB | Avg MER =  17.12 dB
+Slot   2 | Layer 2 | RMS EVM =  18.98% | Peak EVM = 179.45% | Avg EVM = -14.43 dB | Peak EVM =   5.08 dB | Avg MER =  14.43 dB
+Slot   2 | NewTB=1 | TxBits= 35856 | RxBits=     0 | AttemptBLER=1.000 | CumAttemptBLER=1.000 | FinalBLER=0.000 | Eff=0.0% | InstThr=0.00 | AvgThr=0.00
+Slot 2. HARQ Proc 2: CW0: Initial transmission failed  (TBS=35856,RV=0,CR=0.478846).
+Slot   3 | Layer 1 | RMS EVM =  13.41% | Peak EVM =  93.79% | Avg EVM = -17.45 dB | Peak EVM =  -0.56 dB | Avg MER =  17.45 dB
+Slot   3 | Layer 2 | RMS EVM =  19.07% | Peak EVM = 193.38% | Avg EVM = -14.39 dB | Peak EVM =   5.73 dB | Avg MER =  14.39 dB
+Slot   3 | NewTB=0 | TxBits=     0 | RxBits=     0 | AttemptBLER=1.000 | CumAttemptBLER=1.000 | FinalBLER=0.000 | Eff=0.0% | InstThr=0.00 | AvgThr=0.00
+Slot 3. HARQ Proc 3: CW0: Initial transmission failed  (TBS=35856,RV=0,CR=0.478846).
+Slot   4 | Layer 1 | RMS EVM =  13.54% | Peak EVM = 118.00% | Avg EVM = -17.37 dB | Peak EVM =   1.44 dB | Avg MER =  17.37 dB
+Slot   4 | Layer 2 | RMS EVM =  20.23% | Peak EVM = 214.15% | Avg EVM = -13.88 dB | Peak EVM =   6.61 dB | Avg MER =  13.88 dB
+Slot   4 | NewTB=0 | TxBits=     0 | RxBits= 35856 | AttemptBLER=0.000 | CumAttemptBLER=0.800 | FinalBLER=0.000 | Eff=33.3% | InstThr=35.86 | AvgThr=7.17
+Slot 4. HARQ Proc 0: CW0: Retransmission #1 passed  (TBS=35856,RV=3,CR=0.478846).
+Slot   5 | Layer 1 | RMS EVM =  13.23% | Peak EVM =  64.59% | Avg EVM = -17.57 dB | Peak EVM =  -3.80 dB | Avg MER =  17.57 dB
+Slot   5 | Layer 2 | RMS EVM =  20.18% | Peak EVM = 305.12% | Avg EVM = -13.90 dB | Peak EVM =   9.69 dB | Avg MER =  13.90 dB
+Slot   5 | NewTB=0 | TxBits=     0 | RxBits= 35856 | AttemptBLER=0.000 | CumAttemptBLER=0.667 | FinalBLER=0.000 | Eff=66.7% | InstThr=35.86 | AvgThr=11.95
+Slot 5. HARQ Proc 1: CW0: Retransmission #1 passed  (TBS=35856,RV=3,CR=0.478846).
+Slot   6 | Layer 1 | RMS EVM =  13.54% | Peak EVM =  80.31% | Avg EVM = -17.37 dB | Peak EVM =  -1.90 dB | Avg MER =  17.37 dB
+Slot   6 | Layer 2 | RMS EVM =  19.00% | Peak EVM = 168.41% | Avg EVM = -14.43 dB | Peak EVM =   4.53 dB | Avg MER =  14.43 dB
+Slot   6 | NewTB=0 | TxBits=     0 | RxBits= 35856 | AttemptBLER=0.000 | CumAttemptBLER=0.571 | FinalBLER=0.000 | Eff=100.0% | InstThr=35.86 | AvgThr=15.37
+Slot 6. HARQ Proc 2: CW0: Retransmission #1 passed  (TBS=35856,RV=3,CR=0.478846).
+Slot   7 | Layer 1 | RMS EVM =  13.08% | Peak EVM =  68.20% | Avg EVM = -17.67 dB | Peak EVM =  -3.32 dB | Avg MER =  17.67 dB
+Slot   7 | Layer 2 | RMS EVM =  18.68% | Peak EVM = 154.85% | Avg EVM = -14.57 dB | Peak EVM =   3.80 dB | Avg MER =  14.57 dB
+Slot   7 | NewTB=1 | TxBits= 35856 | RxBits= 35856 | AttemptBLER=0.000 | CumAttemptBLER=0.500 | FinalBLER=0.000 | Eff=100.0% | InstThr=35.86 | AvgThr=17.93
+Slot 7. HARQ Proc 3: CW0: Retransmission #1 passed  (TBS=35856,RV=3,CR=0.478846).
+Slot   8 | Layer 1 | RMS EVM =  13.18% | Peak EVM =  61.97% | Avg EVM = -17.60 dB | Peak EVM =  -4.16 dB | Avg MER =  17.60 dB
+Slot   8 | Layer 2 | RMS EVM =  18.81% | Peak EVM = 137.74% | Avg EVM = -14.51 dB | Peak EVM =   2.78 dB | Avg MER =  14.51 dB
+Slot   8 | NewTB=1 | TxBits= 35856 | RxBits=     0 | AttemptBLER=1.000 | CumAttemptBLER=0.556 | FinalBLER=0.000 | Eff=80.0% | InstThr=0.00 | AvgThr=15.94
+Slot 8. HARQ Proc 0: CW0: Initial transmission failed  (TBS=35856,RV=0,CR=0.478846).
+Slot   9 | Layer 1 | RMS EVM =  13.60% | Peak EVM =  73.12% | Avg EVM = -17.33 dB | Peak EVM =  -2.72 dB | Avg MER =  17.33 dB
+Slot   9 | Layer 2 | RMS EVM =  19.82% | Peak EVM = 206.23% | Avg EVM = -14.06 dB | Peak EVM =   6.29 dB | Avg MER =  14.06 dB
+Slot   9 | NewTB=1 | TxBits= 35856 | RxBits=     0 | AttemptBLER=1.000 | CumAttemptBLER=0.600 | FinalBLER=0.000 | Eff=66.7% | InstThr=0.00 | AvgThr=14.34
+Slot 9. HARQ Proc 1: CW0: Initial transmission failed  (TBS=35856,RV=0,CR=0.478846).
+Slot  10 | Layer 1 | RMS EVM =  13.11% | Peak EVM =  72.87% | Avg EVM = -17.65 dB | Peak EVM =  -2.75 dB | Avg MER =  17.65 dB
+Slot  10 | Layer 2 | RMS EVM =  18.75% | Peak EVM = 167.41% | Avg EVM = -14.54 dB | Peak EVM =   4.48 dB | Avg MER =  14.54 dB
+Slot  10 | NewTB=1 | TxBits= 35856 | RxBits=     0 | AttemptBLER=1.000 | CumAttemptBLER=0.636 | FinalBLER=0.000 | Eff=57.1% | InstThr=0.00 | AvgThr=13.04
+Slot 10. HARQ Proc 2: CW0: Initial transmission failed  (TBS=35856,RV=0,CR=0.478846).
+Slot  11 | Layer 1 | RMS EVM =  13.27% | Peak EVM =  82.74% | Avg EVM = -17.54 dB | Peak EVM =  -1.65 dB | Avg MER =  17.54 dB
+Slot  11 | Layer 2 | RMS EVM =  19.15% | Peak EVM = 145.59% | Avg EVM = -14.36 dB | Peak EVM =   3.26 dB | Avg MER =  14.36 dB
+Slot  11 | NewTB=0 | TxBits=     0 | RxBits=     0 | AttemptBLER=1.000 | CumAttemptBLER=0.667 | FinalBLER=0.000 | Eff=57.1% | InstThr=0.00 | AvgThr=11.95
+Slot 11. HARQ Proc 3: CW0: Initial transmission failed  (TBS=35856,RV=0,CR=0.478846).
+Slot  12 | Layer 1 | RMS EVM =  13.24% | Peak EVM =  84.45% | Avg EVM = -17.56 dB | Peak EVM =  -1.47 dB | Avg MER =  17.56 dB
+Slot  12 | Layer 2 | RMS EVM =  18.93% | Peak EVM = 158.61% | Avg EVM = -14.46 dB | Peak EVM =   4.01 dB | Avg MER =  14.46 dB
+Slot  12 | NewTB=0 | TxBits=     0 | RxBits= 35856 | AttemptBLER=0.000 | CumAttemptBLER=0.615 | FinalBLER=0.000 | Eff=71.4% | InstThr=35.86 | AvgThr=13.79
+Slot 12. HARQ Proc 0: CW0: Retransmission #1 passed  (TBS=35856,RV=3,CR=0.478846).
+Slot  13 | Layer 1 | RMS EVM =  13.23% | Peak EVM =  78.38% | Avg EVM = -17.57 dB | Peak EVM =  -2.12 dB | Avg MER =  17.57 dB
+Slot  13 | Layer 2 | RMS EVM =  18.17% | Peak EVM = 170.22% | Avg EVM = -14.81 dB | Peak EVM =   4.62 dB | Avg MER =  14.81 dB
+Slot  13 | NewTB=0 | TxBits=     0 | RxBits= 35856 | AttemptBLER=0.000 | CumAttemptBLER=0.571 | FinalBLER=0.000 | Eff=85.7% | InstThr=35.86 | AvgThr=15.37
+Slot 13. HARQ Proc 1: CW0: Retransmission #1 passed  (TBS=35856,RV=3,CR=0.478846).
+Slot  14 | Layer 1 | RMS EVM =  13.62% | Peak EVM =  75.19% | Avg EVM = -17.31 dB | Peak EVM =  -2.48 dB | Avg MER =  17.31 dB
+Slot  14 | Layer 2 | RMS EVM =  19.31% | Peak EVM = 171.78% | Avg EVM = -14.28 dB | Peak EVM =   4.70 dB | Avg MER =  14.28 dB
+Slot  14 | NewTB=0 | TxBits=     0 | RxBits= 35856 | AttemptBLER=0.000 | CumAttemptBLER=0.533 | FinalBLER=0.000 | Eff=100.0% | InstThr=35.86 | AvgThr=16.73
+Slot 14. HARQ Proc 2: CW0: Retransmission #1 passed  (TBS=35856,RV=3,CR=0.478846).
+Slot  15 | Layer 1 | RMS EVM =  13.66% | Peak EVM =  73.95% | Avg EVM = -17.29 dB | Peak EVM =  -2.62 dB | Avg MER =  17.29 dB
+Slot  15 | Layer 2 | RMS EVM =  19.63% | Peak EVM = 219.95% | Avg EVM = -14.14 dB | Peak EVM =   6.85 dB | Avg MER =  14.14 dB
+Slot  15 | NewTB=1 | TxBits= 35856 | RxBits= 35856 | AttemptBLER=0.000 | CumAttemptBLER=0.500 | FinalBLER=0.000 | Eff=100.0% | InstThr=35.86 | AvgThr=17.93
+Slot 15. HARQ Proc 3: CW0: Retransmission #1 passed  (TBS=35856,RV=3,CR=0.478846).
+Slot  16 | Layer 1 | RMS EVM =  13.09% | Peak EVM =  65.62% | Avg EVM = -17.66 dB | Peak EVM =  -3.66 dB | Avg MER =  17.66 dB
+Slot  16 | Layer 2 | RMS EVM =  18.88% | Peak EVM = 156.33% | Avg EVM = -14.48 dB | Peak EVM =   3.88 dB | Avg MER =  14.48 dB
+Slot  16 | NewTB=1 | TxBits= 35856 | RxBits=     0 | AttemptBLER=1.000 | CumAttemptBLER=0.529 | FinalBLER=0.000 | Eff=88.9% | InstThr=0.00 | AvgThr=16.87
+Slot 16. HARQ Proc 0: CW0: Initial transmission failed  (TBS=35856,RV=0,CR=0.478846).
+Slot  17 | Layer 1 | RMS EVM =  13.12% | Peak EVM =  88.33% | Avg EVM = -17.64 dB | Peak EVM =  -1.08 dB | Avg MER =  17.64 dB
+Slot  17 | Layer 2 | RMS EVM =  18.82% | Peak EVM = 177.19% | Avg EVM = -14.51 dB | Peak EVM =   4.97 dB | Avg MER =  14.51 dB
+Slot  17 | NewTB=1 | TxBits= 35856 | RxBits=     0 | AttemptBLER=1.000 | CumAttemptBLER=0.556 | FinalBLER=0.000 | Eff=80.0% | InstThr=0.00 | AvgThr=15.94
+Slot 17. HARQ Proc 1: CW0: Initial transmission failed  (TBS=35856,RV=0,CR=0.478846).
+Slot  18 | Layer 1 | RMS EVM =  13.24% | Peak EVM =  72.19% | Avg EVM = -17.56 dB | Peak EVM =  -2.83 dB | Avg MER =  17.56 dB
+Slot  18 | Layer 2 | RMS EVM =  18.59% | Peak EVM = 129.12% | Avg EVM = -14.61 dB | Peak EVM =   2.22 dB | Avg MER =  14.61 dB
+Slot  18 | NewTB=1 | TxBits= 35856 | RxBits=     0 | AttemptBLER=1.000 | CumAttemptBLER=0.579 | FinalBLER=0.000 | Eff=72.7% | InstThr=0.00 | AvgThr=15.10
+Slot 18. HARQ Proc 2: CW0: Initial transmission failed  (TBS=35856,RV=0,CR=0.478846).
+Slot  19 | Layer 1 | RMS EVM =  13.24% | Peak EVM =  67.45% | Avg EVM = -17.56 dB | Peak EVM =  -3.42 dB | Avg MER =  17.56 dB
+Slot  19 | Layer 2 | RMS EVM =  19.37% | Peak EVM = 179.15% | Avg EVM = -14.26 dB | Peak EVM =   5.06 dB | Avg MER =  14.26 dB
+Slot  19 | NewTB=0 | TxBits=     0 | RxBits=     0 | AttemptBLER=1.000 | CumAttemptBLER=0.600 | FinalBLER=0.000 | Eff=72.7% | InstThr=0.00 | AvgThr=14.34
+Slot 19. HARQ Proc 3: CW0: Initial transmission failed  (TBS=35856,RV=0,CR=0.478846).
+Constellation figure saved to: \\wsl.localhost\ubuntu\home\arsewar\ee492_5gNR_sim\tests\AustinS\figures\64QAM_SNR8.0_TDL-C_NHARQ4_rvSeq[0321]_8x2_20260301_140428_Constellation.png
+
+========================================
+     5G NR HARQ Simulation Results      
+========================================
+
+--- Configuration ---
+HARQ Type: Chase Combining
+RV Sequence: [0  3  2  1]
+Number of HARQ Processes: 4
+Modulation: 64QAM
+Number of Layers: 2
+Code Rate: 0.4785
+SNR: 8.00 dB
+Number of Slots: 20
+
+--- Transmission Statistics ---
+Total Transmissions: 20
+Initial Transmissions: 11
+Retransmissions: 9
+Average Transmissions per TB: 1.82
+Retransmission Rate: 45.00%
+
+--- Performance Metrics ---
+Successful Blocks: 8 / 11
+Failed Blocks (after max retx): 0
+Attempt BLER (pre-HARQ): 0.6000 (60.00%)
+Final BLER (post-HARQ):  0.0000 (0.00%)
+
+--- Throughput Analysis ---
+Total Bits Transmitted: 394416
+Total Bits Received (success): 286848
+Throughput Efficiency: 72.73%
+Effective Code Rate: 0.1915
+Average Throughput: 0.01 Mbps
+Average Bits per Slot: 14342 bits
+
+--- Spectral Efficiency ---
+Spectral Efficiency: 0.0015 bits/s/Hz
+
+========================================
+
+--- Channel Model Details ---
+Delay Profile: TDL-C
+RMS Delay Spread: 30.00 ns
+Mean Excess Delay: 21.87 ns
+Maximum Channel Delay: 11 samples (0.72 μs)
+
+--- Channel Quality Statistics ---
+Average Channel Gain: 0.56 dB
+Channel Gain Std Dev: 0.07 dB
+Average Condition Number: 13.99
+
+--- SINR Statistics (per layer) ---
+Layer 1 - Mean SINR: 17.48 dB, Std: 0.16 dB
+Layer 2 - Mean SINR: 14.34 dB, Std: 0.25 dB
+
+Coherence Bandwidth (50% corr): 6666.69 kHz
+Coherence Time (50% corr): 35.81 ms
