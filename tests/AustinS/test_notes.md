@@ -13,14 +13,9 @@ python3 -m make_charts -e runlog_results.xlsx -c charts.yml -o img
 
 ```bash
 du -sh logs/
-```
 
-```bash
 ls logs/ | wc -l 
 ```
-
-
-
 
 
 

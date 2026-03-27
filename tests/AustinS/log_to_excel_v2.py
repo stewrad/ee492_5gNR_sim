@@ -98,6 +98,7 @@ BASE_COLUMNS = [
     "DelayProfile",
     "NumLayers",  # optional in logs
     "Code Rate",
+    "Nominal Code Rate",
     "Total Transmissions",
     "Initial Transmissions",
     "Retransmissions",
@@ -110,20 +111,25 @@ BASE_COLUMNS = [
     "Block Error Rate (BLER %)",
     "Total Bits Transmitted",
     "Total Bits Received",
+    "Total Information Bits Sent (all HARQ attempts)",
+    "Total Information Bits Delivered Successfully",
+    "Total Coded Bits Transmitted",
     "Throughput Efficiency (%)",
+    "Effective Throughput Efficiency (InfoBits/CodedBits)",
+    "Time Slot Duration (ms)",
+    "Estimated Latency (ms)",
     "Effective Code Rate",
     "Average Throughput (Mbps)",
     "Average Bits per Slot (bits)",
     "Spectral Efficiency (bits/s/Hz)",
     "RMS Delay Spread (ns)",
     "Mean Excess Delay (ns)",
-    "Maximum Channel Delay (us)",      # stored in microseconds (us)
+    "Maximum Channel Delay (us)",
     "Average Channel Gain (dB)",
     "Channel Gain Std Dev (dB)",
     "Average Condition Number",
-    # Layer SINR columns added dynamically: "Layer 1 - Mean SINR", ...
-    "Coherence Bandwidth (50% corr) (kHz)",        # kHz numeric
-    "Coherence Time (50% corr) (ms)",             # ms numeric
+    "Coherence Bandwidth (50% corr) (kHz)",
+    "Coherence Time (50% corr) (ms)",
 ]
 
 TRACE_COLUMNS = ["Source File", "Timestamp"]
@@ -179,14 +185,53 @@ def parse_runlog(text: str, source_file: str) -> Dict[str, Any]:
         r"Final BLER \(post-HARQ\):\s*[0-9]*\.?[0-9]+\s*\(([0-9]*\.?[0-9]+)%\)", text
     )
 
-    out["Total Bits Transmitted"] = _re_int(r"Total Bits Transmitted:\s*([0-9]+)", text)
-    out["Total Bits Received"] = _re_int(r"Total Bits Received \(success\):\s*([0-9]+)", text)
+    # --- Throughput / bit accounting ---
+    # Backward-compatible parsing for older logs and newer corrected logs
 
-    out["Throughput Efficiency (%)"] = _re_float(r"Throughput Efficiency:\s*([0-9]*\.?[0-9]+)\s*%", text)
-    out["Effective Code Rate"] = _re_float(r"Effective Code Rate:\s*([0-9]*\.?[0-9]+)", text)
+    out["Total Bits Transmitted"] = (
+        _re_int(r"Total Bits Transmitted:\s*([0-9]+)", text)
+        or _re_int(r"Total Information Bits Sent \(all HARQ attempts\):\s*([0-9]+)", text)
+    )
+
+    out["Total Bits Received"] = (
+        _re_int(r"Total Bits Received \(success\):\s*([0-9]+)", text)
+        or _re_int(r"Total Information Bits Delivered Successfully:\s*([0-9]+)", text)
+    )
+
+    out["Total Information Bits Sent (all HARQ attempts)"] = _re_int(
+        r"Total Information Bits Sent \(all HARQ attempts\):\s*([0-9]+)", text
+    )
+
+    out["Total Information Bits Delivered Successfully"] = _re_int(
+        r"Total Information Bits Delivered Successfully:\s*([0-9]+)", text
+    )
+
+    out["Total Coded Bits Transmitted"] = _re_int(
+        r"Total Coded Bits Transmitted:\s*([0-9]+)", text
+    )
+
+    out["Throughput Efficiency (%)"] = _re_float(
+        r"Throughput Efficiency(?:\s*\(.*?\))?:\s*([0-9]*\.?[0-9]+)\s*%", text
+    )
+
+    out["Effective Throughput Efficiency (InfoBits/CodedBits)"] = _re_float(
+        r"Effective Throughput Efficiency \(InfoBits/CodedBits\):\s*([0-9]*\.?[0-9]+)", text
+    )
+
+    # Keep old field for backward compatibility with old logs
+    out["Effective Code Rate"] = _re_float(
+        r"Effective Code Rate:\s*([0-9]*\.?[0-9]+)", text
+    )
+
+    out["Nominal Code Rate"] = _re_float(
+        r"Nominal Code Rate(?:\s*\(per TB\))?:\s*([0-9]*\.?[0-9]+)", text
+    )
 
     out["Average Throughput (Mbps)"] = _re_float(r"Average Throughput:\s*([0-9]*\.?[0-9]+)\s*Mbps", text)
     out["Average Bits per Slot (bits)"] = _re_int(r"Average Bits per Slot:\s*([0-9]+)\s*bits", text)
+
+    out["Time Slot Duration (ms)"] = _re_float(r"Time Slot Duration \(ms\):\s*([0-9]*\.?[0-9]+)", text)
+    out["Estimated Latency (ms)"] = _re_float(r"Estimated Latency \(ms\):\s*([0-9]*\.?[0-9]+)", text)
 
     out["Spectral Efficiency (bits/s/Hz)"] = _re_float(r"Spectral Efficiency:\s*([0-9]*\.?[0-9]+)\s*bits/s/Hz", text)
 

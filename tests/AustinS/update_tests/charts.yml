@@ -10,16 +10,16 @@
 #     xlabel: "SNR (dB)"
 
 
-charts:
-  - name: "Est. Latency (ms) vs SNR (1HARQ [0 2 3 1] TDL-C)"
-    kind: "line"
-    x: "SNRdB"
-    y: "Estimated Latency (ms)"
-    groupby: "Modulation"
-    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 1 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
-    title: "Estimated Latency (ms) vs SNR (1HARQ [0 2 3 1] TDL-C)"
-    ylabel: "Est. Latency (ms)"
-    xlabel: "SNR (dB)"
+# charts:
+#   - name: "Est. Latency (ms) vs SNR (1HARQ [0 2 3 1] TDL-C)"
+#     kind: "line"
+#     x: "SNRdB"
+#     y: "Estimated Latency (ms)"
+#     groupby: "Modulation"
+#     filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 1 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+#     title: "Estimated Latency (ms) vs SNR (1HARQ [0 2 3 1] TDL-C)"
+#     ylabel: "Est. Latency (ms)"
+#     xlabel: "SNR (dB)"
 
 
 charts:
@@ -28,7 +28,7 @@ charts:
     x: "SNRdB"
     y: "Estimated Latency (ms)"
     groupby: "NHARQProcesses"
-    filter: "nTxAnts == 8 and nRxAnts == 8 Modulation == '256QAM' and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and Modulation == '256QAM' and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
     title: "Estimated Latency (ms) vs SNR (256-QAM [0 2 3 1] TDL-C)"
     ylabel: "Est. Latency (ms)"
     xlabel: "SNR (dB)"

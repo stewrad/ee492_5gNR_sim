@@ -14,6 +14,8 @@
 % NOTE: the main script must be on the MATLAB path (or in the same folder).
 % -------------------------------------------------------------------------
 
+clear all; close all; clc
+
 % =========================================================================
 % DEFINE SWEEP SPACE — edit these cell/numeric arrays to taste
 % =========================================================================
