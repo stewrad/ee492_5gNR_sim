@@ -37,5 +37,7 @@ Thumbs.db
 # (Optional) logs/figures
 tests/AustinS/logs
 tests/AustinS/figures
+tests/AustinS/gold_logs
+tests/AustinS/gold_figures
 logs/
 figures/
