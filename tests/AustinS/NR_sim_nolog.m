@@ -672,10 +672,8 @@ logBuffer(end+1) = sprintf('Initial Transmissions: %d', totalInitialTransmission
 logBuffer(end+1) = sprintf('Retransmissions: %d', totalRetransmissions);
 logBuffer(end+1) = sprintf('Average Transmissions per TB: %.2f', ...
     totalTransmissions / totalInitialTransmissions);
-% logBuffer(end+1) = sprintf('Retransmission Rate: %.2f%%', ...
-%     (totalRetransmissions / totalTransmissions) * 100);
 logBuffer(end+1) = sprintf('Retransmission Rate: %.2f%%', ...
-    (totalRetransmissions / max(1,totalInitialTransmissions)) * 100);
+    (totalRetransmissions / max(1,totalInitialTransmissions + totalRetransmissions)) * 100);
 
 % logBuffer(end+1) = sprintf('\n--- Performance Metrics ---\n');
 % logBuffer(end+1) = sprintf('Successful Blocks: %d / %d\n', successfulBlocks, totalInitialTransmissions);
@@ -713,6 +711,12 @@ throughput_Mbps = (avgBitsPerSlot / slotDuration) / 1e6;
 
 logBuffer(end+1) = sprintf('Average Throughput: %.2f Mbps', throughput_Mbps);
 logBuffer(end+1) = sprintf('Average Bits per Slot: %.0f bits', avgBitsPerSlot);
+
+tSlot = 1e-3 / carrier.SlotsPerSubframe;
+latency_est = (1 + (totalRetransmissions/totalInitialTransmissions)) * tSlot;
+logBuffer(end+1) = sprintf('\n--- Latency Calculation ---');
+logBuffer(end+1) = sprintf('Time slot Duration (ms): %.6f', tSlot * 1e3);
+logBuffer(end+1) = sprintf('Estimated Latency (ms): %.6f', latency_est * 1e3);
 
 logBuffer(end+1) = sprintf('\n--- Spectral Efficiency ---');
 numRBs = numel(pdsch.PRBSet);

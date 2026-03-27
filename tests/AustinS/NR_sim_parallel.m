@@ -51,8 +51,7 @@ if logging == 1
         mkdir(figDir);
     end
 
-    rvStr  = sprintf('%d_', rvSeq);
-    rvStr(end) = [];  % remove trailing underscore
+    rvStr  = sprintf('%d', rvSeq);
     antStr = sprintf('%dx%d', nTxAnts, nRxAnts);
 
     ts = char(datetime('now','Format','yyyyMMdd_HHmmss'));
@@ -90,6 +89,9 @@ try
     % Carrier configuration
     % ---------------------------------------------------------------------
     carrier = nrCarrierConfig;
+    % note that nrCarrierConfig defaults to SCS = 15 kHz unless
+    % carrier.SubcarrierSpacing is set explicitly elsehwere, e.g. 30 kHz
+    carrier.SubcarrierSpacing = 15;   % kHz
 
     %% --------------------------------------------------------------------
     % PDSCH and DM-RS config
@@ -152,7 +154,7 @@ try
         logBuffer(end+1) = sprintf('%15s: %g', 'SNRdB', SNRdB);
         logBuffer(end+1) = sprintf('%15s: "%s"', 'Modulation', Modulation);
         logBuffer(end+1) = sprintf('%15s: %d', 'NHARQProcesses', NHARQProcesses);
-        logBuffer(end+1) = sprintf('%15s: [%s]', 'rvSeq', num2str(rvSeq));
+        logBuffer(end+1) = sprintf('%15s: [%s]', 'rvSeq', strjoin(string(rvSeq), ' '));
         logBuffer(end+1) = sprintf('%15s: %d', 'nTxAnts', nTxAnts);
         logBuffer(end+1) = sprintf('%15s: %d', 'nRxAnts', nRxAnts);
         logBuffer(end+1) = sprintf('%15s: %d', 'NumLayers', NumLayers);
@@ -198,6 +200,7 @@ try
     totalTransmissions = 0;
     totalInitialTransmissions = 0;
     totalRetransmissions = 0;
+    totalCodedBits = 0;
     blockErrors = 0;
     successfulBlocks = 0;
     transmissionAttempts = zeros(totalNoSlots, 1); %#ok<NASGU>
@@ -254,6 +257,9 @@ try
     % Main simulation loop
     % ---------------------------------------------------------------------
     for nSlot = 0:totalNoSlots-1
+        % attempt at correcting counting
+        isNewDataCW = false(pdsch.NumCodewords,1);
+
         carrier.NSlot = nSlot;
 
         [pdschIndices,pdschInfo] = nrPDSCHIndices(carrier,pdsch);
@@ -262,6 +268,9 @@ try
         trBlkSizes = nrTBS(pdsch.Modulation,pdsch.NumLayers,numel(pdsch.PRBSet),pdschInfo.NREPerPRB,codeRate,Xoh_PDSCH);
 
         for cwIdx = 1:pdsch.NumCodewords
+        
+            isNewDataCW(cwIdx) = harqEntity.NewData(cwIdx);
+
             if harqEntity.NewData(cwIdx)
                 trBlk = randi([0 1],trBlkSizes(cwIdx),1);
                 setTransportBlock(encodeDLSCH,trBlk,cwIdx-1,harqEntity.HARQProcessID);
@@ -390,6 +399,31 @@ try
         [decbits,blkerr] = decodeDLSCH(dlschLLRs,pdsch.Modulation,pdsch.NumLayers, ...
             harqEntity.RedundancyVersion,harqEntity.HARQProcessID); %#ok<NASGU>
 
+        % ATTEMPT correcting Throughput Efficiency calc
+        for cwIdx = 1:pdsch.NumCodewords
+            % Count every HARQ transmission attempt
+            totalTransmissions = totalTransmissions + 1;
+            % Count coded bits actually transmitted
+            totalCodedBits = totalCodedBits + pdschInfo.G;
+            % Count transmitted information bits on every attempt
+            % (new transmission + retransmissions)
+            totalTxBits = totalTxBits + trBlkSizes(cwIdx);
+
+            if isNewDataCW(cwIdx)
+                totalInitialTransmissions = totalInitialTransmissions + 1;
+            else
+                totalRetransmissions = totalRetransmissions + 1;
+            end
+
+            % Count successfully delivered information bits once per
+            % successful decode event
+            if ~blkerr(cwIdx)
+                successfulBlocks = successfulBlocks + 1;
+                totalRxBits = totalRxBits + trBlkSizes(cwIdx);
+                perSlotSuccess(nSlot+1) = 1;
+            end
+        end
+
         statusReport = updateAndAdvance(harqEntity,blkerr,trBlkSizes,pdschInfo.G);
 
         [perfState, perfLog(nSlot+1)] = logPerfMetrics(perfState, nSlot, trBlkSizes, blkerr, harqEntity, slotDuration_s);
@@ -405,26 +439,26 @@ try
                 perfLog(nSlot+1).instThroughputMbps, perfLog(nSlot+1).avgThroughputMbps);
         end
 
-        totalTransmissions = totalTransmissions + 1;
-
-        for cwIdx = 1:pdsch.NumCodewords
-            if harqEntity.NewData(cwIdx)
-                totalInitialTransmissions = totalInitialTransmissions + 1;
-                totalTxBits = totalTxBits + trBlkSizes(cwIdx);
-            else
-                totalRetransmissions = totalRetransmissions + 1;
-            end
-
-            if ~blkerr(cwIdx)
-                successfulBlocks = successfulBlocks + 1;
-                totalRxBits = totalRxBits + trBlkSizes(cwIdx);
-                perSlotSuccess(nSlot+1) = 1;
-            else
-                if harqEntity.SequenceTimeout(cwIdx)
-                    blockErrors = blockErrors + 1;
-                end
-            end
-        end
+        % totalTransmissions = totalTransmissions + 1;
+        % 
+        % for cwIdx = 1:pdsch.NumCodewords
+        %     if harqEntity.NewData(cwIdx)
+        %         totalInitialTransmissions = totalInitialTransmissions + 1;
+        %         totalTxBits = totalTxBits + trBlkSizes(cwIdx);
+        %     else
+        %         totalRetransmissions = totalRetransmissions + 1;
+        %     end
+        % 
+        %     if ~blkerr(cwIdx)
+        %         successfulBlocks = successfulBlocks + 1;
+        %         totalRxBits = totalRxBits + trBlkSizes(cwIdx);
+        %         perSlotSuccess(nSlot+1) = 1;
+        %     else
+        %         if harqEntity.SequenceTimeout(cwIdx)
+        %             blockErrors = blockErrors + 1;
+        %         end
+        %     end
+        % end
 
         perSlotBER(nSlot+1) = sum(blkerr) / pdsch.NumCodewords;
 
@@ -519,7 +553,7 @@ try
 
     logBuffer(end+1) = sprintf('\n--- Configuration ---');
     logBuffer(end+1) = sprintf('HARQ Type: Chase Combining');
-    logBuffer(end+1) = sprintf('RV Sequence: [%s]', num2str(rvSeq));
+    logBuffer(end+1) = sprintf('RV Sequence: [%s]', strjoin(string(rvSeq), ' '));
     logBuffer(end+1) = sprintf('Number of HARQ Processes: %d', NHARQProcesses);
     logBuffer(end+1) = sprintf('Modulation: %s', pdsch.Modulation);
     logBuffer(end+1) = sprintf('Number of Layers: %d', pdsch.NumLayers);
@@ -534,7 +568,7 @@ try
     logBuffer(end+1) = sprintf('Average Transmissions per TB: %.2f', ...
         totalTransmissions / max(1,totalInitialTransmissions));
     logBuffer(end+1) = sprintf('Retransmission Rate: %.2f%%', ...
-        (totalRetransmissions / max(1,totalInitialTransmissions)) * 100);
+        (totalRetransmissions / max(1,totalInitialTransmissions + totalRetransmissions)) * 100);
 
     finalBLER = (totalInitialTransmissions - successfulBlocks) / max(1,totalInitialTransmissions);
     attemptBLER = perfState.attemptsFailed / max(1, perfState.attemptsTotal);
@@ -546,10 +580,18 @@ try
     logBuffer(end+1) = sprintf('Final BLER (post-HARQ):  %.4f (%.2f%%)', finalBLER, finalBLER*100);
 
     logBuffer(end+1) = sprintf('\n--- Throughput Analysis ---');
-    logBuffer(end+1) = sprintf('Total Bits Transmitted: %d', totalTxBits);
-    logBuffer(end+1) = sprintf('Total Bits Received (success): %d', totalRxBits);
-    logBuffer(end+1) = sprintf('Throughput Efficiency: %.2f%%', (totalRxBits / max(1,totalTxBits)) * 100);
-    logBuffer(end+1) = sprintf('Effective Code Rate: %.4f', totalRxBits / max(1,(totalTransmissions * pdschInfo.G)));
+    % logBuffer(end+1) = sprintf('Total Bits Transmitted: %d', totalTxBits);
+    % logBuffer(end+1) = sprintf('Total Bits Received (success): %d', totalRxBits);
+    % logBuffer(end+1) = sprintf('Throughput Efficiency: %.2f%%', (totalRxBits / max(1,totalTxBits)) * 100);
+    % logBuffer(end+1) = sprintf('Effective Code Rate: %.4f', totalRxBits / max(1,(totalTransmissions * pdschInfo.G)));
+    logBuffer(end+1) = sprintf('Total Information Bits Sent (all HARQ attempts): %d', totalTxBits);
+    logBuffer(end+1) = sprintf('Total Information Bits Delivered Successfully: %d', totalRxBits);
+    logBuffer(end+1) = sprintf('Throughput Efficiency: %.2f%%', ...
+        (totalRxBits / max(1,totalTxBits)) * 100);
+    logBuffer(end+1) = sprintf('Effective Throughput Efficiency (InfoBits/CodedBits): %.4f', ...
+    totalRxBits / max(1,totalCodedBits));
+    logBuffer(end+1) = sprintf('Nominal Code Rate (per TB): %.4f', ...
+    trBlkSizes(1) / pdschInfo.G);
 
     avgBitsPerSlot = totalRxBits / totalNoSlots;
     slotDuration = carrier.SlotsPerSubframe / (carrier.SubcarrierSpacing / 15e3) * 1e-3;
@@ -557,6 +599,11 @@ try
 
     logBuffer(end+1) = sprintf('Average Throughput: %.2f Mbps', throughput_Mbps);
     logBuffer(end+1) = sprintf('Average Bits per Slot: %.0f bits', avgBitsPerSlot);
+
+    latency_est = (1 + (totalRetransmissions/totalInitialTransmissions)) * slotDuration_s;
+    logBuffer(end+1) = sprintf('\n--- Latency Calculation ---');
+    logBuffer(end+1) = sprintf('Time slot Duration (ms): %.6f', slotDuration_s * 1e3);
+    logBuffer(end+1) = sprintf('Estimated Latency (ms): %.6f', latency_est * 1e3);
 
     logBuffer(end+1) = sprintf('\n--- Spectral Efficiency ---');
     numRBs = numel(pdsch.PRBSet);

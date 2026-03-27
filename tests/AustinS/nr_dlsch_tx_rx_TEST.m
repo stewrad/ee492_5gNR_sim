@@ -703,6 +703,13 @@ throughput_Mbps = (avgBitsPerSlot / slotDuration) / 1e6;
 fprintf('Average Throughput: %.2f Mbps\n', throughput_Mbps);
 fprintf('Average Bits per Slot: %.0f bits\n', avgBitsPerSlot);
 
+
+tSlot = 1e-3 / carrier.SlotsPerSubframe;
+latency_est = (1 + (totalRetransmissions/totalInitialTransmissions)) * tSlot;
+fprintf('\n--- Latency Calculation ---');
+fprintf('Time slot Duration (ms): %.6f', tSlot * 1e3);
+fprintf('Estimated Latency (ms): %.6f', latency_est * 1e3);
+
 fprintf('\n--- Spectral Efficiency ---\n');
 numRBs = numel(pdsch.PRBSet);
 bandwidth_Hz = numRBs * 12 * carrier.SubcarrierSpacing * 1e3;

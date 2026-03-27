@@ -1,20 +1,32 @@
 % run_sweep_parallel.m
 % Parallel parameter sweep for NR_sim_parallel(cfg)
 
-clear;
+clear all;
+close all;
 clc;
 
 sweepTimer = tic;
 
-%% Sweep parameters
+% %% Sweep parameters
+% SNRdB_vals          = [0 2 4 6 8 10 12];
+% Modulation_vals     = {"QPSK","16QAM","64QAM","256QAM","1024QAM"};
+% NHARQProcesses_vals = [1];  %[1 2 4 8 16];
+% rvSeq_vals          = {[0 2 3 1], [0 0 0 0]}; %, [0 1 2 3], [0 3 2 1], [0 2 1 3], [0 0 0 0]};
+% nTxAnts_vals        = [2 8];
+% nRxAnts_vals        = [2 8];
+% DelayProfile_vals   = {"TDL-C"}; %{"TDL-A","TDL-B","TDL-C"};
+% NumLayers           = 2;
+
+% LATENCY RUNS:
 SNRdB_vals          = [0 2 4 6 8 10 12];
-Modulation_vals     = {"QPSK","16QAM","64QAM","256QAM","1024QAM"};
-NHARQProcesses_vals = [1];  %[1 2 4 8 16];
-rvSeq_vals          = {[0 2 3 1], [0];} %, [0 1 2 3], [0 3 2 1], [0 2 1 3]};
-nTxAnts_vals        = [2 8];
-nRxAnts_vals        = [2 8];
+Modulation_vals     = {"256QAM"};
+NHARQProcesses_vals = [1 2 4 8 16];
+rvSeq_vals          = {[0 2 3 1]};%, [0 0 0 0]}; %, [0 1 2 3], [0 3 2 1], [0 2 1 3], [0 0 0 0]};
+nTxAnts_vals        = [8];
+nRxAnts_vals        = [8];
 DelayProfile_vals   = {"TDL-C"}; %{"TDL-A","TDL-B","TDL-C"};
 NumLayers           = 2;
+
 
 %% Build all parameter combinations
 [gS,gM,gH,gRV,gTx,gRx,gDP] = ndgrid( ...
@@ -32,10 +44,11 @@ totalRuns = size(idxList, 1);
 fprintf('\n========================================================\n');
 fprintf('  Starting parallel sweep\n');
 fprintf('  Total combinations: %d\n', totalRuns);
+fprintf('  Start time: %s\n', datetime('now'));
 fprintf('========================================================\n\n');
 
 %% Start or reset parallel pool
-numWorkers = 8;   % change to 3 if desired
+numWorkers = 10;   % change to 3 if desired
 
 poolobj = gcp('nocreate');
 if isempty(poolobj)
@@ -148,15 +161,24 @@ fprintf('========================================================\n');
 
 %% Local functions
 function updateProgress(~)
-    persistent count
+    persistent count lastTime startTime
+
     if isempty(count)
         count = 0;
+        startTime = tic;      % total sweep timer
+        lastTime  = tic;      % timer for 25-run chunks
     end
 
     count = count + 1;
 
     if mod(count,25) == 0
-        fprintf('Completed %d runs...\n', count);
+        chunkTime = toc(lastTime);
+        totalTime = toc(startTime);
+
+        fprintf('Completed %d runs... | Last 25: %.2fs | Total: %s\n', ...
+            count, chunkTime, formatDuration(totalTime));
+
+        lastTime = tic;   % reset chunk timer
     end
 end
 

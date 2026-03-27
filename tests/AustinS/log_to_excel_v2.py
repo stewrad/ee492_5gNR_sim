@@ -98,6 +98,7 @@ BASE_COLUMNS = [
     "DelayProfile",
     "NumLayers",  # optional in logs
     "Code Rate",
+    "Nominal Code Rate",
     "Total Transmissions",
     "Initial Transmissions",
     "Retransmissions",
@@ -110,20 +111,25 @@ BASE_COLUMNS = [
     "Block Error Rate (BLER %)",
     "Total Bits Transmitted",
     "Total Bits Received",
+    "Total Information Bits Sent (all HARQ attempts)",
+    "Total Information Bits Delivered Successfully",
+    "Total Coded Bits Transmitted",
     "Throughput Efficiency (%)",
+    "Effective Throughput Efficiency (InfoBits/CodedBits)",
+    "Time Slot Duration (ms)",
+    "Estimated Latency (ms)",
     "Effective Code Rate",
     "Average Throughput (Mbps)",
     "Average Bits per Slot (bits)",
     "Spectral Efficiency (bits/s/Hz)",
     "RMS Delay Spread (ns)",
     "Mean Excess Delay (ns)",
-    "Maximum Channel Delay (us)",      # stored in microseconds (us)
+    "Maximum Channel Delay (us)",
     "Average Channel Gain (dB)",
     "Channel Gain Std Dev (dB)",
     "Average Condition Number",
-    # Layer SINR columns added dynamically: "Layer 1 - Mean SINR", ...
-    "Coherence Bandwidth (50% corr) (kHz)",        # kHz numeric
-    "Coherence Time (50% corr) (ms)",             # ms numeric
+    "Coherence Bandwidth (50% corr) (kHz)",
+    "Coherence Time (50% corr) (ms)",
 ]
 
 TRACE_COLUMNS = ["Source File", "Timestamp"]
@@ -179,14 +185,53 @@ def parse_runlog(text: str, source_file: str) -> Dict[str, Any]:
         r"Final BLER \(post-HARQ\):\s*[0-9]*\.?[0-9]+\s*\(([0-9]*\.?[0-9]+)%\)", text
     )
 
-    out["Total Bits Transmitted"] = _re_int(r"Total Bits Transmitted:\s*([0-9]+)", text)
-    out["Total Bits Received"] = _re_int(r"Total Bits Received \(success\):\s*([0-9]+)", text)
+    # --- Throughput / bit accounting ---
+    # Backward-compatible parsing for older logs and newer corrected logs
 
-    out["Throughput Efficiency (%)"] = _re_float(r"Throughput Efficiency:\s*([0-9]*\.?[0-9]+)\s*%", text)
-    out["Effective Code Rate"] = _re_float(r"Effective Code Rate:\s*([0-9]*\.?[0-9]+)", text)
+    out["Total Bits Transmitted"] = (
+        _re_int(r"Total Bits Transmitted:\s*([0-9]+)", text)
+        or _re_int(r"Total Information Bits Sent \(all HARQ attempts\):\s*([0-9]+)", text)
+    )
+
+    out["Total Bits Received"] = (
+        _re_int(r"Total Bits Received \(success\):\s*([0-9]+)", text)
+        or _re_int(r"Total Information Bits Delivered Successfully:\s*([0-9]+)", text)
+    )
+
+    out["Total Information Bits Sent (all HARQ attempts)"] = _re_int(
+        r"Total Information Bits Sent \(all HARQ attempts\):\s*([0-9]+)", text
+    )
+
+    out["Total Information Bits Delivered Successfully"] = _re_int(
+        r"Total Information Bits Delivered Successfully:\s*([0-9]+)", text
+    )
+
+    out["Total Coded Bits Transmitted"] = _re_int(
+        r"Total Coded Bits Transmitted:\s*([0-9]+)", text
+    )
+
+    out["Throughput Efficiency (%)"] = _re_float(
+        r"Throughput Efficiency(?:\s*\(.*?\))?:\s*([0-9]*\.?[0-9]+)\s*%", text
+    )
+
+    out["Effective Throughput Efficiency (InfoBits/CodedBits)"] = _re_float(
+        r"Effective Throughput Efficiency \(InfoBits/CodedBits\):\s*([0-9]*\.?[0-9]+)", text
+    )
+
+    # Keep old field for backward compatibility with old logs
+    out["Effective Code Rate"] = _re_float(
+        r"Effective Code Rate:\s*([0-9]*\.?[0-9]+)", text
+    )
+
+    out["Nominal Code Rate"] = _re_float(
+        r"Nominal Code Rate(?:\s*\(per TB\))?:\s*([0-9]*\.?[0-9]+)", text
+    )
 
     out["Average Throughput (Mbps)"] = _re_float(r"Average Throughput:\s*([0-9]*\.?[0-9]+)\s*Mbps", text)
     out["Average Bits per Slot (bits)"] = _re_int(r"Average Bits per Slot:\s*([0-9]+)\s*bits", text)
+
+    out["Time Slot Duration (ms)"] = _re_float(r"Time Slot Duration \(ms\):\s*([0-9]*\.?[0-9]+)", text)
+    out["Estimated Latency (ms)"] = _re_float(r"Estimated Latency \(ms\):\s*([0-9]*\.?[0-9]+)", text)
 
     out["Spectral Efficiency (bits/s/Hz)"] = _re_float(r"Spectral Efficiency:\s*([0-9]*\.?[0-9]+)\s*bits/s/Hz", text)
 
@@ -267,7 +312,7 @@ def ensure_columns(df: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
     return df
 
 
-def normalize_excel_path(excel_path: str) -> str:
+def normalize_excel_path(excel_path: str, excel_name: str) -> str:
     """
     If excel_path is a directory (e.g. "."), create a default filename inside it.
     Also ensure .xlsx extension.
@@ -276,7 +321,7 @@ def normalize_excel_path(excel_path: str) -> str:
 
     # If they passed a directory, create default filename inside it
     if os.path.isdir(p):
-        p = os.path.join(p, "runlog_results.xlsx")
+        p = os.path.join(p, excel_name)
 
     # If they passed something without extension, add .xlsx
     if not p.lower().endswith(".xlsx"):
@@ -287,9 +332,10 @@ def normalize_excel_path(excel_path: str) -> str:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--log_dir", required=True, help="Directory containing runlog_*.txt files")
-    ap.add_argument("--excel_path", required=True, help="Path to output .xlsx OR a directory like '.'")
-    ap.add_argument("--sheet", default="Results", help="Worksheet name")
+    ap.add_argument("-d", "--log_dir", required=True, help="Directory containing runlog_*.txt files")
+    ap.add_argument("-ex", "--excel_path", required=True, help="Path to output .xlsx OR a directory like '.'")
+    ap.add_argument("-fname", "--excel_name", default="runlog_results.xlsx", help="Excel file name")
+    ap.add_argument("-sn", "--sheet", default="Results", help="Worksheet name")
     ap.add_argument("--pattern", default="*.txt", help="Glob pattern inside log_dir")
     ap.add_argument(
         "--dedupe",
@@ -300,7 +346,7 @@ def main():
 
     # Normalize paths so "." works reliably
     args.log_dir = os.path.abspath(os.path.expanduser(args.log_dir))
-    args.excel_path = normalize_excel_path(args.excel_path)
+    args.excel_path = normalize_excel_path(args.excel_path, args.excel_name)
 
     files = sorted(glob.glob(os.path.join(args.log_dir, args.pattern)))
     if not files:
