@@ -50,25 +50,28 @@ if logging == 1
         antStr, ...
         datestr(now,'yyyymmdd_HHMMSS')));
 
+    fid = fopen(logFile, 'w');
+
     % Create figures .png with the same base filename as logFile 
     [~, baseName, ~] = fileparts(logFile);
     figFile        = fullfile(figDir, baseName + ".png");           % kept for compatibility
     % figFileChEst   = fullfile(figDir, baseName + "_ChEst.png");
     figFileConst   = fullfile(figDir, baseName + "_Constellation.png");
 
-    diary(logFile);
+    % diary(logFile);
+    logBuffer = strings(0,1);
 end
 
 % Define a struct of parameters set in this simulation run 
 % ------------------------------------------------------------------------------------------------
-runParams.SNRdB = SNRdB;
-runParams.Modulation = Modulation;
-runParams.NHARQProcesses = NHARQProcesses;
-runParams.rvSeq = rvSeq;
-runParams.nTxAnts = nTxAnts;
-runParams.nRxAnts = nRxAnts;
-runParams.NumLayers = NumLayers;
-runParams.DelayProfile = DelayProfile;
+% runParams.SNRdB = SNRdB;
+% runParams.Modulation = Modulation;
+% runParams.NHARQProcesses = NHARQProcesses;
+% runParams.rvSeq = rvSeq;
+% runParams.nTxAnts = nTxAnts;
+% runParams.nRxAnts = nRxAnts;
+% runParams.NumLayers = NumLayers;
+% runParams.DelayProfile = DelayProfile;
 % runParams.seed = seed;
 % [~, gitHash] = system('git rev-parse HEAD');
 
@@ -77,7 +80,7 @@ runParams.DelayProfile = DelayProfile;
 % Specify SNR, number of slots, and perfect channel estimation flag 
 % ------------------------------------------------------------------------------------------------
 SNRdB = SNRdB;             % SNR in dB
-totalNoSlots = 50;         % Number of slots to simulate
+totalNoSlots = 500;         % Number of slots to simulate
 perfectEstimation = false; % Perfect synchronization and channel estimation
 rng("default");            % Set default random number generator for repeatability
 
@@ -181,39 +184,47 @@ channel.ChannelResponseOutput = 'ofdm-response';
 chInfo = info(channel);
 
 % Print simulated parameters for test log
-fprintf('\n===== RUN START =====\n');
-fprintf('Timestamp: %s\n', datestr(now));
-disp(runParams);
-% fprintf('Git Commit: %s\n', strtrim(gitHash));
-fprintf('=====================\n\n');
+logBuffer(end+1) = sprintf('===== RUN START =====');
+logBuffer(end+1) = sprintf('Timestamp: %s', datestr(now));
+logBuffer(end+1) = "===== RUN PARAMETERS =====";
+logBuffer(end+1) = sprintf('%15s: %g', 'SNRdB', SNRdB);
+logBuffer(end+1) = sprintf('%15s: "%s"', 'Modulation', Modulation);
+logBuffer(end+1) = sprintf('%15s: %d', 'NHARQProcesses', NHARQProcesses);
+logBuffer(end+1) = sprintf('%15s: [%s]', 'rvSeq', num2str(rvSeq));
+logBuffer(end+1) = sprintf('%15s: %d', 'nTxAnts', nTxAnts);
+logBuffer(end+1) = sprintf('%15s: %d', 'nRxAnts', nRxAnts);
+logBuffer(end+1) = sprintf('%15s: %d', 'NumLayers', NumLayers);
+logBuffer(end+1) = sprintf('%15s: "%s"', 'DelayProfile', DelayProfile);
+logBuffer(end+1) = "===========================";
+logBuffer(end+1) = "";
 
 % Get additional channel parameters
-fprintf('\n========== Channel Model Configuration ==========\n');
-fprintf('Channel Type: %s\n', channel.DelayProfile);
-fprintf('Sample Rate: %.2f MHz\n', channel.SampleRate / 1e6);
-fprintf('Maximum Channel Delay: %d samples\n', chInfo.MaximumChannelDelay);
-fprintf('Transmit Antennas: %d\n', channel.NumTransmitAntennas);
-fprintf('Receive Antennas: %d\n', channel.NumReceiveAntennas);
+logBuffer(end+1) = sprintf('\n========== Channel Model Configuration ==========');
+logBuffer(end+1) = sprintf('Channel Type: %s', channel.DelayProfile);
+logBuffer(end+1) = sprintf('Sample Rate: %.2f MHz', channel.SampleRate / 1e6);
+logBuffer(end+1) = sprintf('Maximum Channel Delay: %d samples', chInfo.MaximumChannelDelay);
+logBuffer(end+1) = sprintf('Transmit Antennas: %d', channel.NumTransmitAntennas);
+logBuffer(end+1) = sprintf('Receive Antennas: %d', channel.NumReceiveAntennas);
 
 % Display path details
-fprintf('\n--- Path Characteristics ---\n');
-fprintf('Path Delays (ns): [%s]\n', num2str(chInfo.PathDelays * 1e9, '%.2f '));
-fprintf('Average Path Gains (dB): [%s]\n', num2str(chInfo.AveragePathGains, '%.2f '));
+logBuffer(end+1) = sprintf('--- Path Characteristics ---\n');
+logBuffer(end+1) = sprintf('Path Delays (ns): [%s]', num2str(chInfo.PathDelays * 1e9, '%.2f '));
+logBuffer(end+1) = sprintf('Average Path Gains (dB): [%s]', num2str(chInfo.AveragePathGains, '%.2f '));
 
 % Calculate RMS delay spread
 pathPowers = 10.^(chInfo.AveragePathGains/10);
 meanDelay = sum(chInfo.PathDelays .* pathPowers) / sum(pathPowers);
 rmsDelaySpread = sqrt(sum(((chInfo.PathDelays - meanDelay).^2) .* pathPowers) / sum(pathPowers));
 
-fprintf('RMS Delay Spread: %.2f ns\n', rmsDelaySpread * 1e9);
-fprintf('Mean Excess Delay: %.2f ns\n', meanDelay * 1e9);
+logBuffer(end+1) = sprintf('RMS Delay Spread: %.2f ns', rmsDelaySpread * 1e9);
+logBuffer(end+1) = sprintf('Mean Excess Delay: %.2f ns', meanDelay * 1e9);
 
 % Check if Doppler is configured
 if isprop(channel, 'MaximumDopplerShift')
-    fprintf('Maximum Doppler Shift: %.2f Hz\n', channel.MaximumDopplerShift);
+    logBuffer(end+1) = sprintf('Maximum Doppler Shift: %.2f Hz', channel.MaximumDopplerShift);
 end
 
-fprintf('================================================\n\n');
+logBuffer(end+1) = sprintf('================================================\n');
 
 % Transmission and reception
 % Set up a loop to simulate the transmission and reception of slots. Create a comm.ConstellationDiagram to display the constellation of the equalized signal.
@@ -436,8 +447,8 @@ for nSlot = 0:totalNoSlots-1
         EVMpk_dB  (nSlot+1, layerIdx) = M.PeakEVM_dB;
         MERavg_dB (nSlot+1, layerIdx) = M.AvgMER_dB;
 
-        fprintf(['Slot %3d | Layer %d | RMS EVM = %6.2f%% | Peak EVM = %6.2f%% | ' ...
-                 'Avg EVM = %6.2f dB | Peak EVM = %6.2f dB | Avg MER = %6.2f dB\n'], ...
+        logBuffer(end+1) = sprintf(['Slot %3d | Layer %d | RMS EVM = %6.2f%% | Peak EVM = %6.2f%% | ' ...
+                 'Avg EVM = %6.2f dB | Peak EVM = %6.2f dB | Avg MER = %6.2f dB'], ...
                  nSlot, layerIdx, M.RmsEVM_pct, M.PeakEVM_pct, M.AvgEVM_dB, M.PeakEVM_dB, M.AvgMER_dB);
     end
 
@@ -490,9 +501,9 @@ for nSlot = 0:totalNoSlots-1
     [perfState, perfLog(nSlot+1)] = logPerfMetrics(perfState, nSlot, trBlkSizes, blkerr, harqEntity, slotDuration_s);
 
     % Print a compact line every slot (adjust formatting however you want)
-    fprintf(['Slot %3d | NewTB=%d | TxBits=%6d | RxBits=%6d | ' ...
+    logBuffer(end+1) = sprintf(['Slot %3d | NewTB=%d | TxBits=%6d | RxBits=%6d | ' ...
          'AttemptBLER=%.3f | CumAttemptBLER=%.3f | ' ...
-         'FinalBLER=%.3f | Eff=%.1f%% | InstThr=%.2f | AvgThr=%.2f\n'], ...
+         'FinalBLER=%.3f | Eff=%.1f%% | InstThr=%.2f | AvgThr=%.2f'], ...
         nSlot, perfLog(nSlot+1).isNewTB, perfLog(nSlot+1).txBitsThisSlot, ...
         perfLog(nSlot+1).rxBitsThisSlot, ...
         perfLog(nSlot+1).attemptBLER_thisSlot, perfLog(nSlot+1).attemptBLER_cum, ...
@@ -511,12 +522,9 @@ for nSlot = 0:totalNoSlots-1
             totalRetransmissions = totalRetransmissions + 1;
         end
 
-        tbDelivered = false(pdsch.NumCodewords, NHARQProcesses);
-
         % Track successful decoding
         if ~blkerr(cwIdx)
             successfulBlocks = successfulBlocks + 1;
-            tbDelivered(cwIdx, harqId) = true;
             totalRxBits = totalRxBits + trBlkSizes(cwIdx);
             perSlotSuccess(nSlot+1) = 1;
         else
@@ -531,7 +539,8 @@ for nSlot = 0:totalNoSlots-1
     % For now, we'll track based on block errors
     perSlotBER(nSlot+1) = sum(blkerr) / pdsch.NumCodewords;
 
-    disp("Slot "+(nSlot)+". "+statusReport);
+    % disp("Slot "+(nSlot)+". "+statusReport);
+    logBuffer(end+1) = sprintf('Slot %d. %s', nSlot, statusReport);
 
     % Cache last-slot data for end-of-run plotting
     lastEstChGridLayers = estChGridLayers;
@@ -553,10 +562,10 @@ end % for nSlot = 0:totalNoSlots
 % 
 % if logging == 1
 %     exportgraphics(figChEst, figFileChEst, 'Resolution', 150);
-%     fprintf('Channel estimate figure saved to: %s\n', figFileChEst);
+%     logBuffer(end+1) = sprintf('Channel estimate figure saved to: %s\n', figFileChEst);
 % else
 %     exportgraphics(figChEst, fullfile(pwd, 'Channel_Estimate.png'), 'Resolution', 150);
-%     fprintf('Channel estimate figure saved to: %s\n', fullfile(pwd,'Channel_Estimate.png'));
+%     logBuffer(end+1) = sprintf('Channel estimate figure saved to: %s\n', fullfile(pwd,'Channel_Estimate.png'));
 % end
 % close(figChEst);
 
@@ -634,44 +643,44 @@ text(ax, xlims(1) + 0.03*diff(xlims), ylims(1) + 0.04*diff(ylims), ann_str, ...
 
 if logging == 1
     exportgraphics(figConst, figFileConst, 'Resolution', 150);
-    fprintf('Constellation figure saved to: %s\n', figFileConst);
+    logBuffer(end+1) = sprintf('Constellation figure saved to: %s\n', figFileConst);
 else
     exportgraphics(figConst, fullfile(pwd, 'Constellation.png'), 'Resolution', 150);
-    fprintf('Constellation figure saved to: %s\n', fullfile(pwd,'Constellation.png'));
+    logBuffer(end+1) = sprintf('Constellation figure saved to: %s\n', fullfile(pwd,'Constellation.png'));
 end
 close(figConst);
 
 
 % ========== Enhanced Results Display ==========
-fprintf('\n========================================\n');
-fprintf('     5G NR HARQ Simulation Results      \n');
-fprintf('========================================\n');
+logBuffer(end+1) = sprintf('========================================');
+logBuffer(end+1) = sprintf('     5G NR HARQ Simulation Results      ');
+logBuffer(end+1) = sprintf('========================================');
 
-fprintf('\n--- Configuration ---\n');
-fprintf('HARQ Type: Chase Combining\n');
-fprintf('RV Sequence: [%s]\n', num2str(rvSeq));
-fprintf('Number of HARQ Processes: %d\n', NHARQProcesses);
-fprintf('Modulation: %s\n', pdsch.Modulation);
-fprintf('Number of Layers: %d\n', pdsch.NumLayers);
-fprintf('Code Rate: %.4f\n', codeRate);
-fprintf('SNR: %.2f dB\n', SNRdB);
-fprintf('Number of Slots: %d\n', totalNoSlots);
+logBuffer(end+1) = sprintf('\n--- Configuration ---');
+logBuffer(end+1) = sprintf('HARQ Type: Chase Combining');
+logBuffer(end+1) = sprintf('RV Sequence: [%s]', num2str(rvSeq));
+logBuffer(end+1) = sprintf('Number of HARQ Processes: %d', NHARQProcesses);
+logBuffer(end+1) = sprintf('Modulation: %s', pdsch.Modulation);
+logBuffer(end+1) = sprintf('Number of Layers: %d', pdsch.NumLayers);
+logBuffer(end+1) = sprintf('Code Rate: %.4f', codeRate);
+logBuffer(end+1) = sprintf('SNR: %.2f dB', SNRdB);
+logBuffer(end+1) = sprintf('Number of Slots: %d', totalNoSlots);
 
-fprintf('\n--- Transmission Statistics ---\n');
-fprintf('Total Transmissions: %d\n', totalTransmissions);
-fprintf('Initial Transmissions: %d\n', totalInitialTransmissions);
-fprintf('Retransmissions: %d\n', totalRetransmissions);
-fprintf('Average Transmissions per TB: %.2f\n', ...
+logBuffer(end+1) = sprintf('\n--- Transmission Statistics ---');
+logBuffer(end+1) = sprintf('Total Transmissions: %d', totalTransmissions);
+logBuffer(end+1) = sprintf('Initial Transmissions: %d', totalInitialTransmissions);
+logBuffer(end+1) = sprintf('Retransmissions: %d', totalRetransmissions);
+logBuffer(end+1) = sprintf('Average Transmissions per TB: %.2f', ...
     totalTransmissions / totalInitialTransmissions);
-% fprintf('Retransmission Rate: %.2f%%\n', ...
+% logBuffer(end+1) = sprintf('Retransmission Rate: %.2f%%', ...
 %     (totalRetransmissions / totalTransmissions) * 100);
-fprintf('Retransmission Rate: %.2f%%\n', ...
+logBuffer(end+1) = sprintf('Retransmission Rate: %.2f%%', ...
     (totalRetransmissions / max(1,totalInitialTransmissions)) * 100);
 
-% fprintf('\n--- Performance Metrics ---\n');
-% fprintf('Successful Blocks: %d / %d\n', successfulBlocks, totalInitialTransmissions);
-% fprintf('Failed Blocks (after max retx): %d\n', blockErrors);
-% fprintf('Block Error Rate (BLER): %.4f (%.2f%%)\n', ...
+% logBuffer(end+1) = sprintf('\n--- Performance Metrics ---\n');
+% logBuffer(end+1) = sprintf('Successful Blocks: %d / %d\n', successfulBlocks, totalInitialTransmissions);
+% logBuffer(end+1) = sprintf('Failed Blocks (after max retx): %d\n', blockErrors);
+% logBuffer(end+1) = sprintf('Block Error Rate (BLER): %.4f (%.2f%%)\n', ...
 %     blockErrors / totalInitialTransmissions, ...
 %     (blockErrors / totalInitialTransmissions) * 100);
 
@@ -682,53 +691,53 @@ fprintf('Retransmission Rate: %.2f%%\n', ...
 finalBLER = (totalInitialTransmissions - successfulBlocks) / totalInitialTransmissions;
 attemptBLER = perfState.attemptsFailed / max(1, perfState.attemptsTotal); % pre-HARQ (counts all failed attempts)
 
-fprintf('\n--- Performance Metrics ---\n');
-fprintf('Successful Blocks: %d / %d\n', successfulBlocks, totalInitialTransmissions);
-fprintf('Failed Blocks (after max retx): %d\n', blockErrors);
+logBuffer(end+1) = sprintf('\n--- Performance Metrics ---');
+logBuffer(end+1) = sprintf('Successful Blocks: %d / %d', successfulBlocks, totalInitialTransmissions);
+logBuffer(end+1) = sprintf('Failed Blocks (after max retx): %d', blockErrors);
 
-fprintf('Attempt BLER (pre-HARQ): %.4f (%.2f%%)\n', attemptBLER, attemptBLER*100);
-fprintf('Final BLER (post-HARQ):  %.4f (%.2f%%)\n', finalBLER, finalBLER*100);
+logBuffer(end+1) = sprintf('Attempt BLER (pre-HARQ): %.4f (%.2f%%)', attemptBLER, attemptBLER*100);
+logBuffer(end+1) = sprintf('Final BLER (post-HARQ):  %.4f (%.2f%%)', finalBLER, finalBLER*100);
 
 
 
-fprintf('\n--- Throughput Analysis ---\n');
-fprintf('Total Bits Transmitted: %d\n', totalTxBits);
-fprintf('Total Bits Received (success): %d\n', totalRxBits);
-fprintf('Throughput Efficiency: %.2f%%\n', (totalRxBits / totalTxBits) * 100);
-fprintf('Effective Code Rate: %.4f\n', totalRxBits / (totalTransmissions * pdschInfo.G));
+logBuffer(end+1) = sprintf('\n--- Throughput Analysis ---');
+logBuffer(end+1) = sprintf('Total Bits Transmitted: %d', totalTxBits);
+logBuffer(end+1) = sprintf('Total Bits Received (success): %d', totalRxBits);
+logBuffer(end+1) = sprintf('Throughput Efficiency: %.2f%%', (totalRxBits / totalTxBits) * 100);
+logBuffer(end+1) = sprintf('Effective Code Rate: %.4f', totalRxBits / (totalTransmissions * pdschInfo.G));
 
 % Calculate average throughput per slot
 avgBitsPerSlot = totalRxBits / totalNoSlots;
 slotDuration = carrier.SlotsPerSubframe / (carrier.SubcarrierSpacing / 15e3) * 1e-3; % seconds
 throughput_Mbps = (avgBitsPerSlot / slotDuration) / 1e6;
 
-fprintf('Average Throughput: %.2f Mbps\n', throughput_Mbps);
-fprintf('Average Bits per Slot: %.0f bits\n', avgBitsPerSlot);
+logBuffer(end+1) = sprintf('Average Throughput: %.2f Mbps', throughput_Mbps);
+logBuffer(end+1) = sprintf('Average Bits per Slot: %.0f bits', avgBitsPerSlot);
 
-fprintf('\n--- Spectral Efficiency ---\n');
+logBuffer(end+1) = sprintf('\n--- Spectral Efficiency ---');
 numRBs = numel(pdsch.PRBSet);
 bandwidth_Hz = numRBs * 12 * carrier.SubcarrierSpacing * 1e3;
 spectralEfficiency = (avgBitsPerSlot / slotDuration) / bandwidth_Hz;
-fprintf('Spectral Efficiency: %.4f bits/s/Hz\n', spectralEfficiency);
+logBuffer(end+1) = sprintf('Spectral Efficiency: %.4f bits/s/Hz', spectralEfficiency);
 
-fprintf('\n========================================\n');
+logBuffer(end+1) = sprintf('\n========================================\n');
 
-fprintf('\n--- Channel Model Details ---\n');
-fprintf('Delay Profile: %s\n', channel.DelayProfile);
-fprintf('RMS Delay Spread: %.2f ns\n', rmsDelaySpread * 1e9);
-fprintf('Mean Excess Delay: %.2f ns\n', meanDelay * 1e9);
-fprintf('Maximum Channel Delay: %d samples (%.2f μs)\n', ...
+logBuffer(end+1) = sprintf('--- Channel Model Details ---');
+logBuffer(end+1) = sprintf('Delay Profile: %s', channel.DelayProfile);
+logBuffer(end+1) = sprintf('RMS Delay Spread: %.2f ns', rmsDelaySpread * 1e9);
+logBuffer(end+1) = sprintf('Mean Excess Delay: %.2f ns', meanDelay * 1e9);
+logBuffer(end+1) = sprintf('Maximum Channel Delay: %d samples (%.2f μs)', ...
     chInfo.MaximumChannelDelay, ...
     chInfo.MaximumChannelDelay / channel.SampleRate * 1e6);
 
-fprintf('\n--- Channel Quality Statistics ---\n');
-fprintf('Average Channel Gain: %.2f dB\n', mean(avgChannelGain));
-fprintf('Channel Gain Std Dev: %.2f dB\n', std(avgChannelGain));
-fprintf('Average Condition Number: %.2f\n', mean(conditionNumber(conditionNumber > 0)));
+logBuffer(end+1) = sprintf('\n--- Channel Quality Statistics ---');
+logBuffer(end+1) = sprintf('Average Channel Gain: %.2f dB', mean(avgChannelGain));
+logBuffer(end+1) = sprintf('Channel Gain Std Dev: %.2f dB', std(avgChannelGain));
+logBuffer(end+1) = sprintf('Average Condition Number: %.2f', mean(conditionNumber(conditionNumber > 0)));
 
-fprintf('\n--- SINR Statistics (per layer) ---\n');
+logBuffer(end+1) = sprintf('\n--- SINR Statistics (per layer) ---');
 for layerIdx = 1:pdsch.NumLayers
-    fprintf('Layer %d - Mean SINR: %.2f dB, Std: %.2f dB\n', ...
+    logBuffer(end+1) = sprintf('Layer %d - Mean SINR: %.2f dB, Std: %.2f dB', ...
         layerIdx, ...
         mean(instantaneousSINR(:, layerIdx)), ...
         std(instantaneousSINR(:, layerIdx)));
@@ -736,16 +745,18 @@ end
 
 % Calculate coherence bandwidth and time
 coherenceBW_Hz = 1 / (5 * rmsDelaySpread); % 50% coherence
-fprintf('\nCoherence Bandwidth (50%% corr): %.2f kHz\n', coherenceBW_Hz / 1e3);
+logBuffer(end+1) = sprintf('\nCoherence Bandwidth (50%% corr): %.2f kHz', coherenceBW_Hz / 1e3);
 
 if isprop(channel, 'MaximumDopplerShift') && channel.MaximumDopplerShift > 0
     coherenceTime_s = 9 / (16 * pi * channel.MaximumDopplerShift);
-    fprintf('Coherence Time (50%% corr): %.2f ms\n', coherenceTime_s * 1e3);
+    logBuffer(end+1) = sprintf('Coherence Time (50%% corr): %.2f ms', coherenceTime_s * 1e3);
 end
 
 
 % Final line for Command Window tracking
 if logging == 1
-    diary off;
+    logBuffer(end+1) = fprintf(fid, '%s\n', logBuffer);
+    logBuffer(end+1) = fprintf(fid, '\nRun End: %s\n', datestr(now));
+    fclose(fid);
 end
 

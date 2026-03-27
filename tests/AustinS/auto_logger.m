@@ -80,7 +80,7 @@ for runIdx = 1:totalRuns
     % --- Run the main script (all workspace vars are visible to it) ---
     runTimer = tic;
     try
-        run('nr_dlsch_tx_rx_TEST.m');
+        run('NR_sim_nolog.m');
         elapsed = toc(runTimer);
         finished = finished + 1;
 
