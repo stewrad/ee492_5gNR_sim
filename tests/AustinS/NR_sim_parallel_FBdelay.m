@@ -1,4 +1,4 @@
-function result = NR_sim_parallel(cfg)
+function result = NR_sim_parallel_FBdelay(cfg)
 % NR_sim_parallel(cfg)
 % cfg fields:
 %   runIdx, SNRdB, Modulation, NHARQProcesses, rvSeq,
@@ -206,9 +206,9 @@ try
     totalCodedBits = 0;
     blockErrors = 0;
     successfulBlocks = 0;
-    transmissionAttempts = zeros(totalNoSlots, 1);                                    
+    transmissionAttempts = zeros(totalNoSlots, 1); %#ok<NASGU>
 
-    perSlotSuccess = zeros(totalNoSlots, 1); 
+    perSlotSuccess = zeros(totalNoSlots, 1); %#ok<NASGU>
     perSlotBER = zeros(totalNoSlots, 1);
 
     estChannelGrid = getInitialChannelEstimate(channel,carrier);
@@ -255,6 +255,15 @@ try
         'throughputEfficiencyPct', 0, ...
         'instThroughputMbps', 0, ...
         'avgThroughputMbps', 0), totalNoSlots, 1);
+
+    % Introduce feedback delay to show performance of NHARQProcesses
+    harqFeedbackDelay = 12;
+    % Buffer to store delayed HARQ feedback
+    harqFeedbackBuffer = repmat(struct( ...
+    'blkerr', [], ...
+    'trBlkSizes', [], ...
+    'G', []), harqFeedbackDelay, 1);
+
 
     %% --------------------------------------------------------------------
     % Main simulation loop
@@ -353,41 +362,15 @@ try
         refConst_col = getConstellationRefPoints(pdsch.Modulation);
         refConst_col = refConst_col(:);
 
-        % % RMS EVM TESTING ----------------------------      
-        % % Normalize to unit average power
-        % refConst_col = refConst_col / sqrt(mean(abs(refConst_col).^2));
-
         for layerIdx = 1:pdsch.NumLayers
-            % evmMerMetricsDD 
             layerSyms = pdschEq(:, layerIdx);
-            % RMS EVM TESTING ----------------------------
-            layerSyms = layerSyms / sqrt(mean(abs(layerSyms).^2));
             M = evmMerMetricsDD(layerSyms, refConst_col);
+
             EVMrms_pct(nSlot+1, layerIdx) = M.RmsEVM_pct;
             EVMpk_pct (nSlot+1, layerIdx) = M.PeakEVM_pct;
             EVMrms_dB (nSlot+1, layerIdx) = M.AvgEVM_dB;
             EVMpk_dB  (nSlot+1, layerIdx) = M.PeakEVM_dB;
             MERavg_dB (nSlot+1, layerIdx) = M.AvgMER_dB;
-
-            % % Using evmMerMetricsRef instead of DD
-            % rxLayerSyms = pdschEq(:, layerIdx);
-            % txLayerSyms = pdschSymbols(:, layerIdx);
-            % M = evmMerMetricsRef(rxLayerSyms, txLayerSyms);
-            % EVMrms_pct(nSlot+1, layerIdx) = M.RmsEVM_pct;
-            % EVMpk_pct (nSlot+1, layerIdx) = M.PeakEVM_pct;
-            % EVMrms_dB (nSlot+1, layerIdx) = M.AvgEVM_dB;
-            % EVMpk_dB  (nSlot+1, layerIdx) = M.PeakEVM_dB;
-            % MERavg_dB (nSlot+1, layerIdx) = M.AvgMER_dB;
-
-            % % % Attempt using comm.EVM
-            % rxLayerSyms = pdschEq(:, layerIdx);
-            % txLayerSyms = pdschSymbols(:, layerIdx);
-            % M = evmCommEVM(rxLayerSyms, txLayerSyms);
-            % EVMrms_pct(nSlot+1, layerIdx) = M.RmsEVM_pct;
-            % EVMpk_pct (nSlot+1, layerIdx) = M.PeakEVM_pct;
-            % EVMrms_dB (nSlot+1, layerIdx) = M.AvgEVM_dB;
-            % EVMpk_dB  (nSlot+1, layerIdx) = M.PeakEVM_dB;
-            % MERavg_dB (nSlot+1, layerIdx) = M.AvgMER_dB;
 
             if logging == 1
                 logBuffer(end+1) = sprintf(['Slot %3d | Layer %d | RMS EVM = %6.2f%% | Peak EVM = %6.2f%% | ' ...
@@ -455,7 +438,22 @@ try
             end
         end
 
-        statusReport = updateAndAdvance(harqEntity,blkerr,trBlkSizes,pdschInfo.G);
+        % COMMENT OUT FOR FEEDBACK DELAY 
+        % statusReport = updateAndAdvance(harqEntity,blkerr,trBlkSizes,pdschInfo.G);
+        % --- Push current result into delay buffer ---
+        harqFeedbackBuffer = [harqFeedbackBuffer(2:end); ...
+            struct('blkerr', blkerr, 'trBlkSizes', trBlkSizes, 'G', pdschInfo.G)];
+        
+        % --- Apply delayed HARQ feedback ---
+        delayed = harqFeedbackBuffer(1);
+        
+        if ~isempty(delayed.blkerr)
+            statusReport = updateAndAdvance(harqEntity, ...
+                delayed.blkerr, delayed.trBlkSizes, delayed.G);
+        else
+            statusReport = "HARQ waiting for feedback...";
+        end
+        % ------------------------------------
 
         [perfState, perfLog(nSlot+1)] = logPerfMetrics(perfState, nSlot, trBlkSizes, blkerr, harqEntity, slotDuration_s);
 
@@ -677,7 +675,7 @@ try
     if logging == 1 && fid >= 0
         fprintf(fid, '%s\n', logBuffer);
         fprintf(fid, '\nRun End: %s\n', datestr(now));
-        elapsedTime = toc(runTimer);
+        elapsedTime = toc(runTime);
         fprintf(fid, '\nTotal Time: %s seconds\n', formatDuration(elapsedTime));
         fclose(fid);
         fid = -1;
@@ -695,6 +693,7 @@ catch ME
     rethrow(ME);
 end
 end
+
 
 function str = formatDuration(seconds)
     h = floor(seconds/3600);

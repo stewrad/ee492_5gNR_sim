@@ -15,15 +15,20 @@ except ImportError:
 @dataclass
 class ChartSpec:
     name: str
-    kind: str                 # "line", "scatter", "bar"
+    kind: str
     x: str
     y: str
     groupby: Optional[str] = None
     title: Optional[str] = None
     xlabel: Optional[str] = None
     ylabel: Optional[str] = None
-    filter_expr: Optional[str] = None  # pandas query string
-
+    filter_expr: Optional[str] = None
+    marker: Optional[str] = None
+    linestyle: Optional[str] = None
+    linewidth: Optional[float] = None
+    markersize: Optional[float] = None
+    xlim: Optional[list] = None
+    ylim: Optional[list] = None
 
 def load_config(path: str) -> Dict[str, Any]:
     ext = os.path.splitext(path)[1].lower()
@@ -54,6 +59,12 @@ def to_specs(cfg: Dict[str, Any]) -> List[ChartSpec]:
                 xlabel=c.get("xlabel"),
                 ylabel=c.get("ylabel"),
                 filter_expr=c.get("filter"),
+                marker=c.get("marker"),
+                linestyle=c.get("linestyle"),
+                linewidth=c.get("linewidth"),
+                markersize=c.get("markersize"),
+                xlim=c.get("xlim"),
+                ylim=c.get("ylim"),
             )
         )
     return specs
@@ -133,7 +144,15 @@ def plot_chart(df: pd.DataFrame, spec: ChartSpec, out_dir: str) -> str:
                 if mod in present:
                     gdf = d[d[spec.groupby].astype(str) == mod].sort_values(spec.x)
                     if spec.kind == "line":
-                        ax.plot(gdf[spec.x], gdf[spec.y], label=mod)
+                        ax.plot(
+                            gdf[spec.x],
+                            gdf[spec.y],
+                            label=mod,
+                            marker=spec.marker or "o",
+                            linestyle=spec.linestyle or "-",
+                            linewidth=spec.linewidth or 1.5,
+                            markersize=spec.markersize or 6,
+                        )
                     elif spec.kind == "scatter":
                         ax.scatter(gdf[spec.x], gdf[spec.y], label=mod)
                     elif spec.kind == "bar":
@@ -146,7 +165,15 @@ def plot_chart(df: pd.DataFrame, spec: ChartSpec, out_dir: str) -> str:
             for mod in remaining:
                 gdf = d[d[spec.groupby].astype(str) == mod].sort_values(spec.x)
                 if spec.kind == "line":
-                    ax.plot(gdf[spec.x], gdf[spec.y], label=mod)
+                    ax.plot(
+                        gdf[spec.x],
+                        gdf[spec.y],
+                        label=mod,
+                        marker=spec.marker or "o",
+                        linestyle=spec.linestyle or "-",
+                        linewidth=spec.linewidth or 1.5,
+                        markersize=spec.markersize or 6,
+                    )
                 elif spec.kind == "scatter":
                     ax.scatter(gdf[spec.x], gdf[spec.y], label=mod)
                 elif spec.kind == "bar":
@@ -159,7 +186,15 @@ def plot_chart(df: pd.DataFrame, spec: ChartSpec, out_dir: str) -> str:
             for gval, gdf in d.groupby(spec.groupby):
                 gdf = gdf.sort_values(spec.x)
                 if spec.kind == "line":
-                    ax.plot(gdf[spec.x], gdf[spec.y], label=str(gval))
+                    ax.plot(
+                        gdf[spec.x],
+                        gdf[spec.y],
+                        label=str(gval),
+                        marker=spec.marker or "o",
+                        linestyle=spec.linestyle or "-",
+                        linewidth=spec.linewidth or 1.5,
+                        markersize=spec.markersize or 6,
+                    )
                 elif spec.kind == "scatter":
                     ax.scatter(gdf[spec.x], gdf[spec.y], label=str(gval))
                 elif spec.kind == "bar":
@@ -173,7 +208,14 @@ def plot_chart(df: pd.DataFrame, spec: ChartSpec, out_dir: str) -> str:
         # No groupby: just sort by x and plot one series
         d = d.sort_values(spec.x)
         if spec.kind == "line":
-            ax.plot(d[spec.x], d[spec.y])
+            ax.plot(
+                d[spec.x],
+                d[spec.y],
+                marker=spec.marker or "o",
+                linestyle=spec.linestyle or "-",
+                linewidth=spec.linewidth or 1.5,
+                markersize=spec.markersize or 6,
+            )
         elif spec.kind == "scatter":
             ax.scatter(d[spec.x], d[spec.y])
         elif spec.kind == "bar":
@@ -191,6 +233,15 @@ def plot_chart(df: pd.DataFrame, spec: ChartSpec, out_dir: str) -> str:
     # Safe-ish filename
     safe_name = "".join(ch if ch.isalnum() or ch in (" ", "_", "-", ".") else "_" for ch in spec.name).strip()
     out_path = os.path.join(out_dir, f"{safe_name}.png")
+
+    if spec.xlim:
+        ax.set_xlim(spec.xlim)
+
+    if spec.ylim:
+        ax.set_ylim(spec.ylim)
+
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+    ax.minorticks_on()
 
     fig.tight_layout()
     fig.savefig(out_path, dpi=200)

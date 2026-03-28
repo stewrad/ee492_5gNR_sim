@@ -226,6 +226,7 @@ constPlot.EnableMeasurements = 1;                                               
 offset = 0;
 
 % ========== Performance Tracking Variables ==========
+totalInitialBits = 0;      % Total bits at the start of a new TB
 totalTxBits = 0;           % Total bits transmitted
 totalRxBits = 0;           % Total bits successfully received
 totalTransmissions = 0;    % Total number of transmissions (including retransmissions)
@@ -323,6 +324,8 @@ for nSlot = 0:totalNoSlots-1
             % Create and store a new transport block for transmission
             trBlk = randi([0 1],trBlkSizes(cwIdx),1);
             setTransportBlock(encodeDLSCH,trBlk,cwIdx-1,harqEntity.HARQProcessID);
+
+            totalInitialBits = totalInitialBits + trBlkSizes(cwIdx);
 
             % If the previous RV sequence ends without successful
             % decoding, flush the soft buffer
@@ -661,7 +664,7 @@ fprintf('Retransmissions: %d\n', totalRetransmissions);
 fprintf('Average Transmissions per TB: %.2f\n', ...
     totalTransmissions / totalInitialTransmissions);
 fprintf('Retransmission Rate: %.2f%%', ...
-    (totalRetransmissions / max(1,totalInitialTransmissions + totalRetransmissions)) * 100);
+    (totalRetransmissions / max(1,totalInitialTransmissions)));
 
 % fprintf('\n--- Performance Metrics ---\n');
 % fprintf('Successful Blocks: %d / %d\n', successfulBlocks, totalInitialTransmissions);
@@ -683,13 +686,19 @@ fprintf('Failed Blocks (after max retx): %d\n', blockErrors);
 fprintf('Attempt BLER (pre-HARQ): %.4f (%.2f%%)\n', attemptBLER, attemptBLER*100);
 fprintf('Final BLER (post-HARQ):  %.4f (%.2f%%)\n', finalBLER, finalBLER*100);
 
+throughputEfficiency = totalRxBits / max(1,totalInitialBits);
 
-
-fprintf('\n--- Throughput Analysis ---\n');
-fprintf('Total Bits Transmitted: %d\n', totalTxBits);
-fprintf('Total Bits Received (success): %d\n', totalRxBits);
-fprintf('Throughput Efficiency: %.2f%%\n', (totalRxBits / totalTxBits) * 100);
-fprintf('Effective Code Rate: %.4f\n', totalRxBits / (totalTransmissions * pdschInfo.G));
+logBuffer(end+1) = sprintf('\n--- Throughput Analysis ---');
+logBuffer(end+1) = sprintf('Total Information Bits Sent (all HARQ attempts): %d', totalTxBits);
+logBuffer(end+1) = sprintf('Total Information Bits Delivered Successfully: %d', totalRxBits);
+logBuffer(end+1) = sprintf('Throughput Efficiency: %.2f%%', ...
+throughputEfficiency * 100);
+logBuffer(end+1) = sprintf('HARQ Efficiency: %.2f%%', ...
+(totalRxBits / max(1,totalTxBits)) * 100);
+logBuffer(end+1) = sprintf('Effective Code Rate (InfoBits / CodedBits): %.4f', ...
+    totalRxBits / max(1,totalCodedBits));
+logBuffer(end+1) = sprintf('Nominal Code Rate (per TB): %.4f', ...
+trBlkSizes(1) / pdschInfo.G);
 
 % Calculate average throughput per slot
 avgBitsPerSlot = totalRxBits / totalNoSlots;

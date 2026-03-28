@@ -104,6 +104,8 @@ BASE_COLUMNS = [
     "Retransmissions",
     "Average Transmissions per TB",
     "Retransmission Rate (%)",
+    "TBs Requiring Retransmission",
+    "Average Retransmission Attempts per TB",
     "Successful Blocks",
     "Failed Blocks (after max retx)",
     "Attempt BLER % (pre-HARQ)",
@@ -115,7 +117,7 @@ BASE_COLUMNS = [
     "Total Information Bits Delivered Successfully",
     "Total Coded Bits Transmitted",
     "Throughput Efficiency (%)",
-    "Effective Throughput Efficiency (InfoBits/CodedBits)",
+    "HARQ Efficiency (%)",
     "Time Slot Duration (ms)",
     "Estimated Latency (ms)",
     "Effective Code Rate",
@@ -170,8 +172,16 @@ def parse_runlog(text: str, source_file: str) -> Dict[str, Any]:
         r"Average Transmissions per TB:\s*([0-9]*\.?[0-9]+)", text
     )
 
+    # --- Retransmissions ---
     rr = _re_float(r"Retransmission Rate:\s*([0-9]*\.?[0-9]+)\s*%", text)
     out["Retransmission Rate (%)"] = rr
+
+    out["TBs Requiring Retransmission"] = _re_int(
+        r"TBs Requiring Retransmission:\s*([0-9]+)", text
+    )
+    out["Average Retransmission Attempts per TB"] = _re_float(
+        r"Average Retransmission Attempts per TB:\s*([0-9]*\.?[0-9]+)", text
+    )
 
     out["Successful Blocks"] = _re_int(r"Successful Blocks:\s*([0-9]+)\s*/\s*[0-9]+", text)
     out["Failed Blocks (after max retx)"] = _re_int(r"Failed Blocks \(after max retx\):\s*([0-9]+)", text)
@@ -210,17 +220,32 @@ def parse_runlog(text: str, source_file: str) -> Dict[str, Any]:
         r"Total Coded Bits Transmitted:\s*([0-9]+)", text
     )
 
+    # Success bits / initial offered information bits
     out["Throughput Efficiency (%)"] = _re_float(
         r"Throughput Efficiency(?:\s*\(.*?\))?:\s*([0-9]*\.?[0-9]+)\s*%", text
     )
 
-    out["Effective Throughput Efficiency (InfoBits/CodedBits)"] = _re_float(
-        r"Effective Throughput Efficiency \(InfoBits/CodedBits\):\s*([0-9]*\.?[0-9]+)", text
+    # Success bits / all transmitted information bits including retransmissions
+    out["HARQ Efficiency (%)"] = _re_float(
+        r"HARQ Efficiency:\s*([0-9]*\.?[0-9]+)\s*%", text
     )
 
-    # Keep old field for backward compatibility with old logs
-    out["Effective Code Rate"] = _re_float(
-        r"Effective Code Rate:\s*([0-9]*\.?[0-9]+)", text
+    # Success information bits / total coded bits sent
+    out["Effective Throughput Efficiency (InfoBits/CodedBits)"] = _re_float(
+        r"Effective Throughput Efficiency \(InfoBits/CodedBits\):\s*([0-9]*\.?[0-9]+)",
+        text
+    )
+
+    # Backward compatibility + current MATLAB label
+    out["Effective Code Rate"] = (
+        _re_float(
+            r"Effective Code Rate:\s*([0-9]*\.?[0-9]+)",
+            text,
+        )
+        or _re_float(
+            r"Effective Code Rate \(InfoBits / CodedBits\):\s*([0-9]*\.?[0-9]+)",
+            text,
+        )
     )
 
     out["Nominal Code Rate"] = _re_float(

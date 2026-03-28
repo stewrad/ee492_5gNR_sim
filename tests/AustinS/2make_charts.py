@@ -1,7 +1,7 @@
 import argparse
 import os
 from dataclasses import dataclass
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -15,14 +15,15 @@ except ImportError:
 @dataclass
 class ChartSpec:
     name: str
-    kind: str                 # "line", "scatter", "bar"
+    kind: str  # "line", "scatter", "bar"
     x: str
-    y: str
+    y: Union[str, List[str]]  # can be a single column name or a list of column names
     groupby: Optional[str] = None
     title: Optional[str] = None
     xlabel: Optional[str] = None
     ylabel: Optional[str] = None
     filter_expr: Optional[str] = None  # pandas query string
+    ylabels: Optional[List[str]] = None  # labels corresponding to y list (e.g., ["Pre-HARQ","Post-HARQ"])
 
 
 def load_config(path: str) -> Dict[str, Any]:
@@ -41,12 +42,12 @@ def load_config(path: str) -> Dict[str, Any]:
 
 
 def to_specs(cfg: Dict[str, Any]) -> List[ChartSpec]:
-    specs = []
+    specs: List[ChartSpec] = []
     for c in cfg.get("charts", []):
         specs.append(
             ChartSpec(
                 name=c["name"],
-                kind=c.get("kind", "line"),
+                kind=str(c.get("kind", "line")).lower(),
                 x=c["x"],
                 y=c["y"],
                 groupby=c.get("groupby"),
@@ -54,6 +55,7 @@ def to_specs(cfg: Dict[str, Any]) -> List[ChartSpec]:
                 xlabel=c.get("xlabel"),
                 ylabel=c.get("ylabel"),
                 filter_expr=c.get("filter"),
+                ylabels=c.get("ylabels"),
             )
         )
     return specs
@@ -61,10 +63,10 @@ def to_specs(cfg: Dict[str, Any]) -> List[ChartSpec]:
 
 def _ensure_dataframe(df_or_dict: Any) -> pd.DataFrame:
     """
-    pd.read_excel can return:
-      - DataFrame (normal case)
-      - dict[str, DataFrame] if sheet_name=None was used somewhere
-    This normalizes to a single DataFrame (first sheet if dict).
+    pd.read_excel returns:
+      - DataFrame normally
+      - dict[str, DataFrame] if sheet_name=None is used
+    Normalize to a single DataFrame (first sheet if dict).
     """
     if isinstance(df_or_dict, dict):
         return list(df_or_dict.values())[0]
@@ -73,13 +75,17 @@ def _ensure_dataframe(df_or_dict: Any) -> pd.DataFrame:
 
 def _coerce_numeric(df: pd.DataFrame, cols: List[str]) -> pd.DataFrame:
     """
-    Try to convert listed columns to numeric.
-    Non-numeric values become NaN (then we can drop them for plotting).
+    Convert specified columns to numeric when possible.
+    Non-numeric values become NaN.
     """
     for col in cols:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
     return df
+
+
+def _safe_filename(name: str) -> str:
+    return "".join(ch if ch.isalnum() or ch in (" ", "_", "-", ".") else "_" for ch in name).strip()
 
 
 def plot_chart(df: pd.DataFrame, spec: ChartSpec, out_dir: str) -> str:
@@ -103,18 +109,49 @@ def plot_chart(df: pd.DataFrame, spec: ChartSpec, out_dir: str) -> str:
             f"Filter: {spec.filter_expr}"
         )
 
-    # Make sure x/y are in the dataframe
-    for required in [spec.x, spec.y]:
-        if required not in d.columns:
+    # y can be a single column name or list of column names
+    y_cols: List[str] = spec.y if isinstance(spec.y, list) else [spec.y]
+    y_names: List[str] = spec.ylabels if spec.ylabels else y_cols
+
+    if len(y_names) != len(y_cols):
+        raise RuntimeError(
+            f"Chart '{spec.name}': 'ylabels' must be the same length as 'y' when y is a list.\n"
+            f"y: {y_cols}\n"
+            f"ylabels: {y_names}"
+        )
+
+    # Validate columns exist
+    required_cols = [spec.x] + y_cols
+    for col in required_cols:
+        if col not in d.columns:
             raise KeyError(
-                f"Column '{required}' not found for chart '{spec.name}'. "
+                f"Column '{col}' not found for chart '{spec.name}'. "
                 f"Available columns: {list(d.columns)}"
             )
 
-    d = _coerce_numeric(d, [spec.x, spec.y])
-    d = d.dropna(subset=[spec.x, spec.y])
+    # Coerce x and y columns to numeric and drop NaNs
+    d = _coerce_numeric(d, [spec.x] + y_cols)
+    d = d.dropna(subset=[spec.x] + y_cols)
+
+    if d.empty:
+        raise RuntimeError(
+            f"After converting to numeric, no valid rows remain for chart '{spec.name}'.\n"
+            f"This usually means the x/y columns contain non-numeric text or blanks.\n"
+            f"x: {spec.x}, y: {y_cols}"
+        )
 
     fig, ax = plt.subplots()
+
+    # Plot helpers
+    def _plot_series(xvals, yvals, label: str):
+        if spec.kind == "line":
+            ax.plot(xvals, yvals, label=label)
+        elif spec.kind == "scatter":
+            ax.scatter(xvals, yvals, label=label)
+        elif spec.kind == "bar":
+            ax.bar(xvals, yvals, label=label)
+        else:
+            raise ValueError(f"Unknown chart kind: {spec.kind} (use line/scatter/bar)")
 
     if spec.groupby:
         if spec.groupby not in d.columns:
@@ -123,74 +160,48 @@ def plot_chart(df: pd.DataFrame, spec: ChartSpec, out_dir: str) -> str:
                 f"Available columns: {list(d.columns)}"
             )
 
-        # Special-case ordering for Modulation
+        # Special ordering for Modulation
         if spec.groupby == "Modulation":
             mod_order = ["QPSK", "16QAM", "64QAM", "256QAM", "1024QAM"]
-            present = set(d[spec.groupby].astype(str).unique())
+            present = list(d[spec.groupby].astype(str).unique())
 
-            # Plot in requested order first
-            for mod in mod_order:
-                if mod in present:
-                    gdf = d[d[spec.groupby].astype(str) == mod].sort_values(spec.x)
-                    if spec.kind == "line":
-                        ax.plot(gdf[spec.x], gdf[spec.y], label=mod)
-                    elif spec.kind == "scatter":
-                        ax.scatter(gdf[spec.x], gdf[spec.y], label=mod)
-                    elif spec.kind == "bar":
-                        ax.bar(gdf[spec.x], gdf[spec.y], label=mod)
-                    else:
-                        raise ValueError(f"Unknown chart kind: {spec.kind}")
+            # Plot modulations in preferred order first, then any leftovers
+            ordered_mods = [m for m in mod_order if m in present] + sorted([m for m in present if m not in mod_order])
 
-            # Plot any remaining modulation labels not in mod_order (if any)
-            remaining = sorted(present - set(mod_order))
-            for mod in remaining:
+            for mod in ordered_mods:
                 gdf = d[d[spec.groupby].astype(str) == mod].sort_values(spec.x)
-                if spec.kind == "line":
-                    ax.plot(gdf[spec.x], gdf[spec.y], label=mod)
-                elif spec.kind == "scatter":
-                    ax.scatter(gdf[spec.x], gdf[spec.y], label=mod)
-                elif spec.kind == "bar":
-                    ax.bar(gdf[spec.x], gdf[spec.y], label=mod)
-                else:
-                    raise ValueError(f"Unknown chart kind: {spec.kind}")
+
+                # For each requested y column, plot as its own series with suffix label
+                for ycol, ylab in zip(y_cols, y_names):
+                    series_label = f"{mod} {ylab}" if spec.ylabels else f"{mod} {ycol}"
+                    _plot_series(gdf[spec.x], gdf[ycol], series_label)
 
         else:
             # Default groupby behavior (sorted by x within each group)
             for gval, gdf in d.groupby(spec.groupby):
                 gdf = gdf.sort_values(spec.x)
-                if spec.kind == "line":
-                    ax.plot(gdf[spec.x], gdf[spec.y], label=str(gval))
-                elif spec.kind == "scatter":
-                    ax.scatter(gdf[spec.x], gdf[spec.y], label=str(gval))
-                elif spec.kind == "bar":
-                    ax.bar(gdf[spec.x], gdf[spec.y], label=str(gval))
-                else:
-                    raise ValueError(f"Unknown chart kind: {spec.kind}")
+                for ycol, ylab in zip(y_cols, y_names):
+                    series_label = f"{gval} {ylab}" if spec.ylabels else f"{gval} {ycol}"
+                    _plot_series(gdf[spec.x], gdf[ycol], str(series_label))
 
-        ax.legend(title=spec.groupby)
+        ax.legend(title=spec.groupby, fontsize=8, title_fontsize=8, loc="lower right", bbox_to_anchor=(1, 0.10))
 
     else:
-        # No groupby: just sort by x and plot one series
+        # No groupby: just sort by x and plot one or multiple y series
         d = d.sort_values(spec.x)
-        if spec.kind == "line":
-            ax.plot(d[spec.x], d[spec.y])
-        elif spec.kind == "scatter":
-            ax.scatter(d[spec.x], d[spec.y])
-        elif spec.kind == "bar":
-            ax.bar(d[spec.x], d[spec.y])
-        else:
-            raise ValueError(f"Unknown chart kind: {spec.kind}")
+        for ycol, ylab in zip(y_cols, y_names):
+            series_label = ylab if spec.ylabels else ycol
+            _plot_series(d[spec.x], d[ycol], str(series_label))
+        if len(y_cols) > 1:
+            ax.legend()
 
     ax.set_title(spec.title or spec.name)
     ax.set_xlabel(spec.xlabel or spec.x)
-    ax.set_ylabel(spec.ylabel or spec.y)
+    ax.set_ylabel(spec.ylabel or spec.y if isinstance(spec.y, str) else (spec.ylabel or "Value"))
     ax.grid(True, alpha=0.3)
 
     os.makedirs(out_dir, exist_ok=True)
-
-    # Safe-ish filename
-    safe_name = "".join(ch if ch.isalnum() or ch in (" ", "_", "-", ".") else "_" for ch in spec.name).strip()
-    out_path = os.path.join(out_dir, f"{safe_name}.png")
+    out_path = os.path.join(out_dir, f"{_safe_filename(spec.name)}.png")
 
     fig.tight_layout()
     fig.savefig(out_path, dpi=200)
@@ -200,13 +211,13 @@ def plot_chart(df: pd.DataFrame, spec: ChartSpec, out_dir: str) -> str:
 
 def main():
     p = argparse.ArgumentParser(description="Generate charts from Excel using a config file.")
-    p.add_argument("-e", "--excel", required=True, help="Path to input .xlsx")
-    p.add_argument("-s", "--sheet", default=None, help="Sheet name (default: first sheet)")
-    p.add_argument("-c", "--config", required=True, help="Path to config .yml/.yaml or .json")
-    p.add_argument("-o", "--out", default="charts_out", help="Output directory for PNGs")
+    p.add_argument("--excel", required=True, help="Path to input .xlsx")
+    p.add_argument("--sheet", default=None, help="Sheet name (default: first sheet)")
+    p.add_argument("--config", required=True, help="Path to config .yml/.yaml or .json")
+    p.add_argument("--out", default="charts_out", help="Output directory for PNGs")
     args = p.parse_args()
 
-    # Read excel
+    # Read Excel
     if args.sheet:
         df = pd.read_excel(args.excel, sheet_name=args.sheet)
     else:
@@ -217,7 +228,7 @@ def main():
     cfg = load_config(args.config)
     specs = to_specs(cfg)
 
-    made = []
+    made: List[str] = []
     for spec in specs:
         made.append(plot_chart(df, spec, args.out))
 

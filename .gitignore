@@ -39,5 +39,6 @@ tests/AustinS/logs
 tests/AustinS/figures
 tests/AustinS/gold_logs
 tests/AustinS/gold_figures
+tests/AustinS/update_tests
 logs/
 figures/

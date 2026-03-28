@@ -9,6 +9,11 @@ python3 -m log_to_excel_v2 -d logs/ -ex . -sn parallel_500_slots
 python3 -m make_charts -e runlog_results.xlsx -c charts.yml -o img
 ```
 
+Wrapper for logging and chart generation
+```python
+python3 datagen.py -b update_tests/log13_250slot_rms_evm_normalization
+```
+
 ## Checking output progress: 
 
 ```bash
