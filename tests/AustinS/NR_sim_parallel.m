@@ -21,7 +21,7 @@ logging        = cfg.logging;
 % Honor per-run seed from parfor sweep
 rng(cfg.seed, 'twister');
 
-runTime = tic;
+runTimer = tic;
 
 %% ------------------------------------------------------------------------
 % Result struct + safe defaults
@@ -84,7 +84,7 @@ try
     %% --------------------------------------------------------------------
     % Specify SNR, number of slots, and perfect channel estimation flag
     % ---------------------------------------------------------------------
-    totalNoSlots = 500;
+    totalNoSlots = 5000;
     perfectEstimation = false;
 
     %% --------------------------------------------------------------------
