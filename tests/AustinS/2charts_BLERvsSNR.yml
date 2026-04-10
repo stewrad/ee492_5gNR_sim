@@ -1,0 +1,300 @@
+charts:
+  - name: "Pre vs Post BLER (1HARQ [0 1 2 3] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 1 and rvSeq == '[0 1 2 3]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (2HARQ [0 1 2 3] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+
+  - name: "Pre vs Post BLER (2HARQ [0 1 2 3] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 2 and rvSeq == '[0 1 2 3]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (2HARQ 0 1 2 3] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+  
+  - name: "Pre vs Post BLER (4HARQ [0 1 2 3] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 4 and rvSeq == '[0 1 2 3]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (4HARQ 0 1 2 3] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+
+  - name: "Pre vs Post BLER (8HARQ [0 1 2 3] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 8 and rvSeq == '[0 1 2 3]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (8HARQ [0 1 2 3] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+
+  - name: "Pre vs Post BLER (16HARQ [0 1 2 3] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 16 and rvSeq == '[0 1 2 3]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (16HARQ [0 1 2 3] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+
+  - name: "Pre vs Post BLER (1HARQ [0 2 1 3] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 1 and rvSeq == '[0 2 1 3]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (2HARQ [0 2 1 3] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+
+  - name: "Pre vs Post BLER (2HARQ [0 2 1 3] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 2 and rvSeq == '[0 2 1 3]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (2HARQ [0 2 1 3] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+
+  - name: "Pre vs Post BLER (4HARQ [0 2 1 3] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 4 and rvSeq == '[0 2 1 3]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (4HARQ [0 2 1 3] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+
+  - name: "Pre vs Post BLER (8HARQ [0 2 1 3] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 8 and rvSeq == '[0 2 1 3]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (8HARQ [0 2 1 3] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+
+  - name: "Pre vs Post BLER (16HARQ [0 2 1 3] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 16 and rvSeq == '[0 2 1 3]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (16HARQ [0 2 1 3] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+
+  - name: "Pre vs Post BLER (1HARQ [0 2 3 1] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 1 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (2HARQ [0 2 3 1] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+
+  - name: "Pre vs Post BLER (2HARQ [0 2 3 1] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 2 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (2HARQ [0 2 3 1] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+
+  - name: "Pre vs Post BLER (4HARQ [0 2 3 1] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 4 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (4HARQ [0 2 3 1] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+
+  - name: "Pre vs Post BLER (8HARQ [0 2 3 1] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 8 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (8HARQ [0 2 3 1] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+
+  - name: "Pre vs Post BLER (16HARQ [0 2 3 1] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 16 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (16HARQ [0 2 3 1] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+
+  - name: "Pre vs Post BLER (1HARQ [0 3 2 1] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 1 and rvSeq == '[0 3 2 1]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (2HARQ [0 3 2 1] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+
+  - name: "Pre vs Post BLER (2HARQ [0 3 2 1] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 2 and rvSeq == '[0 3 2 1]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (2HARQ [0 3 2 1] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+
+  - name: "Pre vs Post BLER (4HARQ [0 3 2 1] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 4 and rvSeq == '[0 3 2 1]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (4HARQ [0 3 2 1] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+
+  - name: "Pre vs Post BLER (8HARQ [0 3 2 1] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 8 and rvSeq == '[0 3 2 1]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (8HARQ [0 3 2 1] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"
+
+  - name: "Pre vs Post BLER (16HARQ [0 3 2 1] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y:
+      - "Attempt BLER % (pre-HARQ)"
+      - "Final BLER % (post-HARQ)"
+    ylabels:
+      - "Pre-HARQ"
+      - "Post-HARQ"
+    groupby: "Modulation"
+    filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 16 and rvSeq == '[0 3 2 1]' and DelayProfile == 'TDL-C'"
+    title: "Pre-HARQ vs Post-HARQ vs SNR (16HARQ [0 3 2 1] TDL-C)"
+    ylabel: "BLER (%)"
+    xlabel: "SNR (dB)"

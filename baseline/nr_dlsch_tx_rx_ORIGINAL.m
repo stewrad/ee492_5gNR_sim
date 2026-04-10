@@ -389,8 +389,8 @@ fprintf('Initial Transmissions: %d\n', totalInitialTransmissions);
 fprintf('Retransmissions: %d\n', totalRetransmissions);
 fprintf('Average Transmissions per TB: %.2f\n', ...
     totalTransmissions / totalInitialTransmissions);
-fprintf('Retransmission Rate: %.2f%%\n', ...
-    (totalRetransmissions / totalTransmissions) * 100);
+fprintf('Retransmission Rate: %.2f%%', ...
+    (totalRetransmissions / max(1,totalInitialTransmissions)));
 
 fprintf('\n--- Performance Metrics ---\n');
 fprintf('Successful Blocks: %d / %d\n', successfulBlocks, totalInitialTransmissions);

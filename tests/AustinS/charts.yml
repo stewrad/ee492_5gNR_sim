@@ -1,0 +1,280 @@
+# All Plots -------------------------------------------------
+charts:
+  - name: "Throughput Efficiency (%) vs SNR ([0 2 3 1] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y: "Throughput Efficiency (%)"
+    groupby: "Modulation"
+    filter: "rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+    title: "Throughput Efficiency (%) vs SNR ([0 2 3 1] TDL-C)"
+    ylabel: "Throughput Efficiency (%)"
+    xlabel: "SNR (dB)"
+    marker: "o"
+    linestyle: "-"
+    linewidth: 1.8
+    markersize: 6
+    xlim: [0, 14]
+    # ylim: [0, 120]  
+
+  - name: "Est. Latency (ms) vs SNR (1HARQ [0 2 3 1] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y: "Estimated Latency (ms)"
+    groupby: "Modulation"
+    filter: "NHARQProcesses == 1 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+    title: "Estimated Latency (ms) vs SNR (1HARQ [0 2 3 1] TDL-C)"
+    ylabel: "Est. Latency (ms)"
+    xlabel: "SNR (dB)"
+    marker: "o"
+    linestyle: "-"
+    linewidth: 1.8
+    markersize: 6
+    xlim: [0, 12]
+    ylim: [0, 5]   # adjust based on your latency range
+
+  - name: "HARQ Efficiency (%) vs SNR (256-QAM [0 2 3 1] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y: "HARQ Efficiency (%)"
+    groupby: "NHARQProcesses"
+    filter: "Modulation == '256QAM' and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+    title: "HARQ Efficiency (%) vs SNR (256-QAM [0 2 3 1] TDL-C)"
+    ylabel: "HARQ Efficiency (%)"
+    xlabel: "SNR (dB)"
+    marker: "o"
+    linestyle: "-"
+    linewidth: 1.8
+    markersize: 6
+    xlim: [0, 14]
+    ylim: [0, 100]   # adjust based on your latency range
+
+  - name: "L1 RMS EVM (%) vs SNR (1HARQ [0 2 3 1] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y: "L1 RMS EVM (%)"
+    groupby: "Modulation"
+    filter: "NHARQProcesses == 1 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+    title: "Layer 1 RMS EVM (%) vs SNR"
+    ylabel: "RMS EVM (%)"
+    xlabel: "SNR (dB)"
+    marker: "o"
+    linestyle: "-"
+    linewidth: 1.8
+    markersize: 6
+
+  - name: "BLER vs SNR ([0 2 3 1] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y: "Block Error Rate (BLER %)"
+    groupby: "Modulation"
+    filter: "NHARQProcesses == 16 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+    title: "BLER vs SNR (16HARQ [0 2 3 1] TDL-C)"
+    ylabel: "BLER"
+    xlabel: "SNR (dB)"
+
+# # LATENCY PLOTS -----------------------------------------
+# charts:
+
+
+#   - name: "Est. Latency (ms) vs SNR (1HARQ [0 2 3 1] TDL-C)"
+#     kind: "line"
+#     x: "SNRdB"
+#     y: "Estimated Latency (ms)"
+#     groupby: "Modulation"
+#     filter: "nTxAnts == 8 and nRxAnts == 8 and NHARQProcesses == 1 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+#     title: "Estimated Latency (ms) vs SNR (1HARQ [0 2 3 1] TDL-C)"
+#     ylabel: "Est. Latency (ms)"
+#     xlabel: "SNR (dB)"
+#     marker: "o"
+#     linestyle: "-"
+#     linewidth: 1.8
+#     markersize: 6
+#     xlim: [0, 12]
+#     ylim: [0, 5]   # adjust based on your latency range
+
+#   - name: "Est. Latency (ms) vs SNR (256-QAM [0 2 3 1] TDL-C)"
+#     kind: "line"
+#     x: "SNRdB"
+#     y: "Estimated Latency (ms)"
+#     groupby: "NHARQProcesses"
+#     filter: "nTxAnts == 8 and nRxAnts == 8 and Modulation == '256QAM' and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+#     title: "Estimated Latency (ms) vs SNR (256-QAM [0 2 3 1] TDL-C)"
+#     ylabel: "Est. Latency (ms)"
+#     xlabel: "SNR (dB)"
+#     marker: "o"
+#     linestyle: "-"
+#     linewidth: 1.8
+#     markersize: 6
+#     xlim: [0, 12]
+#     ylim: [0, 5]   
+# # LATENCY PLOTS -----------------------------------------
+
+
+# charts:
+#   - name: "Throughput Efficiency (%) vs SNR (256-QAM [0 2 3 1] TDL-C)"
+#     kind: "line"
+#     x: "SNRdB"
+#     y: "Throughput Efficiency (%)"
+#     groupby: "NHARQProcesses"
+#     filter: "Modulation == '256QAM' and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+#     title: "Throughput Efficiency (%) vs SNR (256-QAM [0 2 3 1] TDL-C)"
+#     ylabel: "Throughput Efficiency (%)"
+#     xlabel: "SNR (dB)"
+#     marker: "o"
+#     linestyle: "-"
+#     linewidth: 1.8
+#     markersize: 6
+#     xlim: [0, 14]
+#     # ylim: [0, 120]   
+
+#   - name: "HARQ Efficiency (%) vs SNR (256-QAM [0 2 3 1] TDL-C)"
+#     kind: "line"
+#     x: "SNRdB"
+#     y: "HARQ Efficiency (%)"
+#     groupby: "NHARQProcesses"
+#     filter: "Modulation == '256QAM' and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+#     title: "HARQ Efficiency (%) vs SNR (256-QAM [0 2 3 1] TDL-C)"
+#     ylabel: "HARQ Efficiency (%)"
+#     xlabel: "SNR (dB)"
+#     marker: "o"
+#     linestyle: "-"
+#     linewidth: 1.8
+#     markersize: 6
+#     xlim: [0, 14]
+#     ylim: [0, 100]   # adjust based on your latency range
+
+#   - name: "Avg Throughput (Mbps) vs SNR (256-QAM [0 2 3 1] TDL-C)"
+#     kind: "line"
+#     x: "SNRdB"
+#     y: "Average Throughput (Mbps)"
+#     groupby: "NHARQProcesses"
+#     filter: "Modulation == '256QAM' and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+#     title: "Average Throughput (Mbps) vs SNR (256-QAM [0 2 3 1] TDL-C)"
+#     ylabel: "Average Throughput (Mbps)"
+#     xlabel: "SNR (dB)"
+#     marker: "o"
+#     linestyle: "-"
+#     linewidth: 1.8
+#     markersize: 6
+#     # xlim: [0, 14]
+#     # ylim: [0, 100]   # adjust based on your latency range
+
+
+
+# Retransmission Rate on 256 QAM, all NHARQ 
+  - name: "Retransmission Rate (%) vs SNR (256-QAM [0 2 3 1] TDL-C)"
+    kind: "line"
+    x: "SNRdB"
+    y: "Retransmission Rate (%)"
+    groupby: "NHARQProcesses"
+    filter: "Modulation == '256QAM' and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+    title: "Retransmission Rate (%) vs SNR for 256-QAM"
+    ylabel: "Retransmission Rate (%)"
+    xlabel: "SNR (dB)"
+    marker: "o"
+    linestyle: "-"
+    linewidth: 1.8
+    markersize: 6
+
+
+# # # RMS EVM 
+#   - name: "L1 RMS EVM (%) vs SNR (1HARQ TDL-C)"
+#     kind: "line"
+#     x: "SNRdB"
+#     y: "L1 RMS EVM (%)"
+#     groupby: "Modulation"
+#     filter: "nTxAnts == 2 and nRxAnts == 2 and NHARQProcesses == 1 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+#     title: "Layer 1 RMS EVM (%) vs SNR"
+#     ylabel: "RMS EVM (%)"
+#     xlabel: "SNR (dB)"
+#     marker: "o"
+#     linestyle: "-"
+#     linewidth: 1.8
+#     markersize: 6
+
+#   - name: "L2 RMS EVM (%) vs SNR (1HARQ TDL-C)"
+#     kind: "line"
+#     x: "SNRdB"
+#     y: "L2 RMS EVM (%)"
+#     groupby: "Modulation"
+#     filter: "nTxAnts == 2 and nRxAnts == 2 and NHARQProcesses == 1 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+#     title: "Layer 2 RMS EVM (%) vs SNR"
+#     ylabel: "RMS EVM (%)"
+#     xlabel: "SNR (dB)"
+#     marker: "o"
+#     linestyle: "-"
+#     linewidth: 1.8
+#     markersize: 6
+
+# EVM vs SINR
+  - name: "L1 RMS EVM vs SINR (sanity check)"
+    kind: "scatter"
+    x: "Layer 1 - Mean SINR"
+    y: "L1 RMS EVM (%)"
+    groupby: "Modulation"
+    filter: "NHARQProcesses == 1 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+    title: "L1 RMS EVM vs SINR"
+    xlabel: "Mean SINR (dB)"
+    ylabel: "RMS EVM (%)"
+
+  - name: "L2 RMS EVM vs SINR (sanity check)"
+    kind: "scatter"
+    x: "Layer 2 - Mean SINR"
+    y: "L2 RMS EVM (%)"
+    groupby: "Modulation"
+    filter: "NHARQProcesses == 1 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+    title: "L2 RMS EVM vs SINR"
+    xlabel: "Mean SINR (dB)"
+    ylabel: "RMS EVM (%)"
+
+# EVM vs Modulation
+  - name: "L1 RMS EVM vs Modulation (SNR=8dB)"
+    kind: "bar"
+    x: "Modulation"
+    y: "L1 RMS EVM (%)"
+    filter: "SNRdB == 8 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+    title: "L1 RMS EVM vs Modulation"
+    xlabel: "Modulation"
+    ylabel: "RMS EVM (%)"
+
+  - name: "L2 RMS EVM vs Modulation (SNR=8dB)"
+    kind: "bar"
+    x: "Modulation"
+    y: "L2 RMS EVM (%)"
+    filter: "SNRdB == 8 and NHARQProcesses == 1 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+    title: "L2 RMS EVM vs Modulation"
+    xlabel: "Modulation"
+    ylabel: "RMS EVM (%)"
+
+# # MER vs SNR
+#   - name: "L1 MER vs SNR"
+#     kind: "line"
+#     x: "SNRdB"
+#     y: "L1 Avg MER (dB)"
+#     groupby: "Modulation"
+#     filter: "NHARQProcesses == 1 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+#     title: "L1 MER vs SNR"
+#     xlabel: "SNR (dB)"
+#     ylabel: "MER (dB)"
+#     marker: "o"
+
+#   - name: "L2 MER vs SNR"
+#     kind: "line"
+#     x: "SNRdB"
+#     y: "L2 Avg MER (dB)"
+#     groupby: "Modulation"
+#     filter: "NHARQProcesses == 1 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+#     title: "L2 MER vs SNR"
+#     xlabel: "SNR (dB)"
+#     ylabel: "MER (dB)"
+#     marker: "o"
+
+#   - name: "L1 RMS EVM vs MER (sanity)"
+#     kind: "scatter"
+#     x: "L1 Avg MER (dB)"
+#     y: "L1 RMS EVM (%)"
+#     groupby: "Modulation"
+#     filter: "NHARQProcesses == 1 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+#     title: "L1 RMS EVM vs MER"
+#     xlabel: "MER (dB)"
+#     ylabel: "RMS EVM (%)"
