@@ -48,7 +48,7 @@ fprintf('  Start time: %s\n', datetime('now'));
 fprintf('========================================================\n\n');
 
 %% Start or reset parallel pool
-numWorkers = 10;   % change to 3 if desired
+numWorkers = 2;   % change to 3 if desired
 
 poolobj = gcp('nocreate');
 if isempty(poolobj)
