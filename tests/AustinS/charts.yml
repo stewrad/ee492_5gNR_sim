@@ -67,7 +67,7 @@ charts:
     x: "SNRdB"
     y: "Block Error Rate (BLER %)"
     groupby: "Modulation"
-    filter: "NHARQProcesses == 16 and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+    filter: "rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
     title: "BLER vs SNR (16HARQ [0 2 3 1] TDL-C)"
     ylabel: "BLER"
     xlabel: "SNR (dB)"
@@ -162,13 +162,13 @@ charts:
 
 
 # Retransmission Rate on 256 QAM, all NHARQ 
-  - name: "Retransmission Rate (%) vs SNR (256-QAM [0 2 3 1] TDL-C)"
+  - name: "Retransmission Rate (%) vs SNR ([0 2 3 1] TDL-C)"
     kind: "line"
     x: "SNRdB"
     y: "Retransmission Rate (%)"
-    groupby: "NHARQProcesses"
-    filter: "Modulation == '256QAM' and rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
-    title: "Retransmission Rate (%) vs SNR for 256-QAM"
+    groupby: "Modulation"
+    filter: "rvSeq == '[0 2 3 1]' and DelayProfile == 'TDL-C'"
+    title: "Retransmission Rate (%) vs SNR"
     ylabel: "Retransmission Rate (%)"
     xlabel: "SNR (dB)"
     marker: "o"

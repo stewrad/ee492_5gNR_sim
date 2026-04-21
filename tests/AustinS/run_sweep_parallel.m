@@ -17,8 +17,8 @@ sweepTimer = tic;
 % DelayProfile_vals   = {"TDL-C"}; %{"TDL-A","TDL-B","TDL-C"};
 % NumLayers           = 2;
 
-% LATENCY RUNS:
-SNRdB_vals          = [0 2 4 6 8 10 12];
+% LATENCY RUNS: 
+SNRdB_vals          = [0 2 4 6 8 10 12 14 16 18];
 Modulation_vals     = {"QPSK","16QAM","64QAM","256QAM","1024QAM"}; %{"256QAM"};
 NHARQProcesses_vals = [1 4 16]; %[8 12 16 20 24]; 
 rvSeq_vals          = {[0 2 3 1]}; %, [0 1 2 3], [0 3 2 1], [0 2 1 3], [0 0 0 0]};
