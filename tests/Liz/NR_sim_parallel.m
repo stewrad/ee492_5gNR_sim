@@ -567,12 +567,12 @@ try
          'Color', 'black', 'BackgroundColor', 'white', 'EdgeColor', 'black', ...
          'Margin', 4);
 
-    if logging == 1
-        exportgraphics(figConst, figFileConst, 'Resolution', 150);
-        logBuffer(end+1) = sprintf('Constellation figure saved to: %s\n', figFileConst);
-    else
-        exportgraphics(figConst, fullfile(pwd, 'Constellation.png'), 'Resolution', 150);
-    end
+    % if logging == 1
+    %     exportgraphics(figConst, figFileConst, 'Resolution', 150);
+    %     logBuffer(end+1) = sprintf('Constellation figure saved to: %s\n', figFileConst);
+    % else
+    %     exportgraphics(figConst, fullfile(pwd, 'Constellation.png'), 'Resolution', 150);
+    % end
     close(figConst);
 
     %% --------------------------------------------------------------------
