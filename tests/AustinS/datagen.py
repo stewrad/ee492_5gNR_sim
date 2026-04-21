@@ -30,8 +30,8 @@ def main():
 
     print("\n=== Running log_to_excel_v2 ===")
     subprocess.run([
-        # "python3", "-m", "log_to_excel_v2",
-        "python3", "-m", "log_to_excel_v3",
+        "python3", "-m", "log_to_excel_v2",
+        # "python3", "-m", "log_to_excel_v3",
         "-d", log_dir,
         "-ex", excel_dir
     ], check=True)
