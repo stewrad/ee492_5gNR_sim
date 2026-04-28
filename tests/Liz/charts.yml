@@ -1,0 +1,70 @@
+charts:
+
+  # =========================
+  # THROUGHPUT (MOST IMPORTANT)
+  # =========================
+  - name: Throughput vs SNR (All Methods)
+    kind: line
+    x: SNRdB
+    y: Average Throughput (Mbps)
+    groupby: Method
+    title: Throughput vs SNR
+    xlabel: SNR (dB)
+    ylabel: Throughput (Mbps)
+
+  # =========================
+  # LATENCY
+  # =========================
+  - name: Latency vs SNR (All Methods)
+    kind: line
+    x: SNRdB
+    y: Estimated Latency (ms)
+    groupby: Method
+    title: Latency vs SNR
+    xlabel: SNR (dB)
+    ylabel: Latency (ms)
+
+  # =========================
+  # BLER
+  # =========================
+  - name: BLER vs SNR (All Methods)
+    kind: line
+    x: SNRdB
+    y: Final BLER %
+    groupby: Method
+    title: BLER vs SNR
+    xlabel: SNR (dB)
+    ylabel: BLER (%)
+
+  # =========================
+  # RETRANSMISSION RATE
+  # =========================
+  - name: Retransmission Rate vs SNR (All Methods)
+    kind: line
+    x: SNRdB
+    y: Retransmission Rate (%)
+    groupby: Method
+    title: Retransmission Rate vs SNR
+    xlabel: SNR (dB)
+    ylabel: Retransmission Rate (%)
+
+  # =========================
+  # OPTIONAL: HARQ EFFECT
+  # =========================
+  - name: Throughput vs SNR (Grouped by HARQ)
+    kind: line
+    x: SNRdB
+    y: Average Throughput (Mbps)
+    groupby: NHARQProcesses
+    title: Throughput vs SNR by HARQ Processes
+    xlabel: SNR (dB)
+    ylabel: Throughput (Mbps)
+
+  - name: Latency vs SNR (Grouped by HARQ)
+    kind: line
+    x: SNRdB
+    y: Estimated Latency (ms)
+    groupby: NHARQProcesses
+    title: Latency vs SNR by HARQ Processes
+    xlabel: SNR (dB)
+    ylabel: Latency (ms)
