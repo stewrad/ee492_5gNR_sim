@@ -42,3 +42,8 @@ tests/AustinS/gold_figures
 tests/AustinS/update_tests
 logs/
 figures/
+Thumbs.db
+# Liz test outputs
+/tests/Liz/logs/
+/tests/Liz/Figures/
+functions/evmMerMetricsDD.m
