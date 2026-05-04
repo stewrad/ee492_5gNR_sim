@@ -1,0 +1,10 @@
+ML logistic model summary
+=========================
+Threshold: 0.350
+Train rows: 97442
+Test rows: 24360
+Accuracy: 0.8904
+Confusion Matrix [TN FP; FN TP]:
+[5677 1720; 949 16014]
+Coefficients [Intercept, SNRdB_z, Is64QAM_z, RecentNACKRate_z]:
+2.05122035 -1.49797262 1.02155771 1.45336042 
