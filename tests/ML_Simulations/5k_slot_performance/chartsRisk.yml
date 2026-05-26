@@ -1,0 +1,9 @@
+charts:
+  - name: Risk Probability vs SNR
+    kind: line
+    x: SNRdB
+    y: Risk Probability
+    groupby: Method
+    title: Risk Probability vs SNR
+    xlabel: SNR (dB)
+    ylabel: Risk Probability
