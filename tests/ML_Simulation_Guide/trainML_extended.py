@@ -6,8 +6,8 @@ from sklearn.metrics import accuracy_score, confusion_matrix, classification_rep
 # =========================
 # 1. Load dataset
 # =========================
-# excel_file = "runlog_results.xlsx"   # change if needed
-excel_file = "runlog_results_ML.xlsx"
+excel_file = "runlog_results.xlsx"   # change if needed
+# excel_file = "runlog_results_ML.xlsx"
 df = pd.read_excel(excel_file)
 
 # Remove summary rows like "Median"

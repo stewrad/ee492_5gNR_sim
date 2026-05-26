@@ -90,13 +90,15 @@ def _parse_sample_rate_to_hz(sample_rate_str: str) -> Optional[float]:
 BASE_COLUMNS = [
     "SNRdB",
     "Modulation",
+    "Retransmission Risk",
+    "Latency Risk",
     "HARQ Type",
     "NHARQProcesses",
     "rvSeq",
     "nTxAnts",
     "nRxAnts",
     "DelayProfile",
-    "NumLayers",  # optional in logs
+    "NumLayers",
     "Code Rate",
     "Nominal Code Rate",
     "Total Transmissions",
@@ -173,8 +175,9 @@ def parse_runlog(text: str, source_file: str) -> Dict[str, Any]:
     )
 
     # --- Retransmissions ---
-    rr = _re_float(r"Retransmission Rate:\s*([0-9]*\.?[0-9]+)\s*%", text)
-    out["Retransmission Rate (%)"] = rr
+    out["Retransmission Rate (%)"] = _re_float(
+        r"Retransmission Rate:\s*([0-9]*\.?[0-9]+)\s*%", text
+    )
 
     out["TBs Requiring Retransmission"] = _re_int(
         r"TBs Requiring Retransmission:\s*([0-9]+)", text
@@ -183,21 +186,30 @@ def parse_runlog(text: str, source_file: str) -> Dict[str, Any]:
         r"Average Retransmission Attempts per TB:\s*([0-9]*\.?[0-9]+)", text
     )
 
-    out["Successful Blocks"] = _re_int(r"Successful Blocks:\s*([0-9]+)\s*/\s*[0-9]+", text)
-    out["Failed Blocks (after max retx)"] = _re_int(r"Failed Blocks \(after max retx\):\s*([0-9]+)", text)
-    out["Block Error Rate (BLER %)"] = _re_float(r"Block Error Rate \(BLER\):\s*([0-9]*\.?[0-9]+)", text)
-
-    # Attempt BLER (pre-HARQ) and Final BLER (post-HARQ) from summary section
-    out["Attempt BLER % (pre-HARQ)"] = _re_float(
-        r"Attempt BLER \(pre-HARQ\):\s*[0-9]*\.?[0-9]+\s*\(([0-9]*\.?[0-9]+)%\)", text
+    out["Successful Blocks"] = _re_int(
+        r"Successful Blocks:\s*([0-9]+)\s*/\s*[0-9]+", text
     )
-    out["Final BLER % (post-HARQ)"] = _re_float(
-        r"Final BLER \(post-HARQ\):\s*[0-9]*\.?[0-9]+\s*\(([0-9]*\.?[0-9]+)%\)", text
+    out["Failed Blocks (after max retx)"] = _re_int(
+        r"Failed Blocks \(after max retx\):\s*([0-9]+)", text
+    )
+    out["Block Error Rate (BLER %)"] = _re_float(
+        r"Block Error Rate \(BLER\):\s*([0-9]*\.?[0-9]+)", text
+    )
+
+    # Attempt BLER (pre-HARQ)
+    out["Attempt BLER % (pre-HARQ)"] = _re_float(
+        r"Attempt BLER \(pre-HARQ\):\s*[0-9]*\.?[0-9]+\s*\(([0-9]*\.?[0-9]+)%\)",
+        text,
+    )
+
+    # Output column is shortened to "Final BLER %" while still parsing the
+    # existing MATLAB log label: "Final BLER (post-HARQ)".
+    out["Final BLER %"] = _re_float(
+        r"Final BLER \(post-HARQ\):\s*[0-9]*\.?[0-9]+\s*\(([0-9]*\.?[0-9]+)%\)",
+        text,
     )
 
     # --- Throughput / bit accounting ---
-    # Backward-compatible parsing for older logs and newer corrected logs
-
     out["Total Bits Transmitted"] = (
         _re_int(r"Total Bits Transmitted:\s*([0-9]+)", text)
         or _re_int(r"Total Information Bits Sent \(all HARQ attempts\):\s*([0-9]+)", text)
@@ -220,28 +232,16 @@ def parse_runlog(text: str, source_file: str) -> Dict[str, Any]:
         r"Total Coded Bits Transmitted:\s*([0-9]+)", text
     )
 
-    # Success bits / initial offered information bits
     out["Throughput Efficiency (%)"] = _re_float(
         r"Throughput Efficiency(?:\s*\(.*?\))?:\s*([0-9]*\.?[0-9]+)\s*%", text
     )
 
-    # Success bits / all transmitted information bits including retransmissions
     out["HARQ Efficiency (%)"] = _re_float(
         r"HARQ Efficiency:\s*([0-9]*\.?[0-9]+)\s*%", text
     )
 
-    # Success information bits / total coded bits sent
-    out["Effective Throughput Efficiency (InfoBits/CodedBits)"] = _re_float(
-        r"Effective Throughput Efficiency \(InfoBits/CodedBits\):\s*([0-9]*\.?[0-9]+)",
-        text
-    )
-
-    # Backward compatibility + current MATLAB label
     out["Effective Code Rate"] = (
-        _re_float(
-            r"Effective Code Rate:\s*([0-9]*\.?[0-9]+)",
-            text,
-        )
+        _re_float(r"Effective Code Rate:\s*([0-9]*\.?[0-9]+)", text)
         or _re_float(
             r"Effective Code Rate \(InfoBits / CodedBits\):\s*([0-9]*\.?[0-9]+)",
             text,
@@ -252,47 +252,77 @@ def parse_runlog(text: str, source_file: str) -> Dict[str, Any]:
         r"Nominal Code Rate(?:\s*\(per TB\))?:\s*([0-9]*\.?[0-9]+)", text
     )
 
-    out["Average Throughput (Mbps)"] = _re_float(r"Average Throughput:\s*([0-9]*\.?[0-9]+)\s*Mbps", text)
-    out["Average Bits per Slot (bits)"] = _re_int(r"Average Bits per Slot:\s*([0-9]+)\s*bits", text)
+    out["Average Throughput (Mbps)"] = _re_float(
+        r"Average Throughput:\s*([0-9]*\.?[0-9]+)\s*Mbps", text
+    )
+    out["Average Bits per Slot (bits)"] = _re_int(
+        r"Average Bits per Slot:\s*([0-9]+)\s*bits", text
+    )
 
-    out["Time Slot Duration (ms)"] = _re_float(r"Time Slot Duration \(ms\):\s*([0-9]*\.?[0-9]+)", text)
-    out["Estimated Latency (ms)"] = _re_float(r"Estimated Latency \(ms\):\s*([0-9]*\.?[0-9]+)", text)
+    out["Time Slot Duration (ms)"] = _re_float(
+        r"Time Slot Duration \(ms\):\s*([0-9]*\.?[0-9]+)", text
+    )
+    out["Estimated Latency (ms)"] = _re_float(
+        r"Estimated Latency \(ms\):\s*([0-9]*\.?[0-9]+)", text
+    )
 
-    out["Spectral Efficiency (bits/s/Hz)"] = _re_float(r"Spectral Efficiency:\s*([0-9]*\.?[0-9]+)\s*bits/s/Hz", text)
+    out["Spectral Efficiency (bits/s/Hz)"] = _re_float(
+        r"Spectral Efficiency:\s*([0-9]*\.?[0-9]+)\s*bits/s/Hz", text
+    )
 
     # --- Channel details ---
-    out["RMS Delay Spread (ns)"] = _re_float(r"RMS Delay Spread:\s*([0-9]*\.?[0-9]+)\s*ns", text)
-    out["Mean Excess Delay (ns)"] = _re_float(r"Mean Excess Delay:\s*([0-9]*\.?[0-9]+)\s*ns", text)
+    out["RMS Delay Spread (ns)"] = _re_float(
+        r"RMS Delay Spread:\s*([0-9]*\.?[0-9]+)\s*ns", text
+    )
+    out["Mean Excess Delay (ns)"] = _re_float(
+        r"Mean Excess Delay:\s*([0-9]*\.?[0-9]+)\s*ns", text
+    )
 
-    max_delay_samples = _re_int(r"Maximum Channel Delay:\s*([0-9]+)\s*samples", text)
+    max_delay_samples = _re_int(
+        r"Maximum Channel Delay:\s*([0-9]+)\s*samples", text
+    )
     max_delay_us = _re_float(
-        r"Maximum Channel Delay:\s*[0-9]+\s*samples\s*\(\s*([0-9]*\.?[0-9]+)\s*μs\s*\)", text
+        r"Maximum Channel Delay:\s*[0-9]+\s*samples\s*\(\s*([0-9]*\.?[0-9]+)\s*μs\s*\)",
+        text,
     )
 
     if max_delay_us is None and max_delay_samples is not None:
-        sr_str = _re_str(r"Sample Rate:\s*([0-9]*\.?[0-9]+\s*[A-Za-z]+)", text)
+        sr_str = _re_str(
+            r"Sample Rate:\s*([0-9]*\.?[0-9]+\s*[A-Za-z]+)", text
+        )
         sr_hz = _parse_sample_rate_to_hz(sr_str) if sr_str else None
         if sr_hz:
             max_delay_us = (max_delay_samples / sr_hz) * 1e6
 
     out["Maximum Channel Delay (us)"] = max_delay_us
 
-    out["Average Channel Gain (dB)"] = _re_float(r"Average Channel Gain:\s*([\-0-9]*\.?[0-9]+)\s*dB", text)
-    out["Channel Gain Std Dev (dB)"] = _re_float(r"Channel Gain Std Dev:\s*([0-9]*\.?[0-9]+)\s*dB", text)
-    out["Average Condition Number"] = _re_float(r"Average Condition Number:\s*([0-9]*\.?[0-9]+)", text)
+    out["Average Channel Gain (dB)"] = _re_float(
+        r"Average Channel Gain:\s*([\-0-9]*\.?[0-9]+)\s*dB", text
+    )
+    out["Channel Gain Std Dev (dB)"] = _re_float(
+        r"Channel Gain Std Dev:\s*([0-9]*\.?[0-9]+)\s*dB", text
+    )
+    out["Average Condition Number"] = _re_float(
+        r"Average Condition Number:\s*([0-9]*\.?[0-9]+)", text
+    )
 
-    out["Coherence Bandwidth (50% corr) (kHz)"] = _re_float(r"Coherence Bandwidth.*?:\s*([0-9]*\.?[0-9]+)\s*kHz", text)
-    out["Coherence Time (50% corr) (ms)"] = _re_float(r"Coherence Time.*?:\s*([0-9]*\.?[0-9]+)\s*ms", text)
+    out["Coherence Bandwidth (50% corr) (kHz)"] = _re_float(
+        r"Coherence Bandwidth.*?:\s*([0-9]*\.?[0-9]+)\s*kHz", text
+    )
+    out["Coherence Time (50% corr) (ms)"] = _re_float(
+        r"Coherence Time.*?:\s*([0-9]*\.?[0-9]+)\s*ms", text
+    )
 
     # --- Layer SINR: dynamic columns ---
-    for m in re.finditer(r"Layer\s+([0-9]+)\s*-\s*Mean SINR:\s*([\-0-9]*\.?[0-9]+)\s*dB", text):
+    for m in re.finditer(
+        r"Layer\s+([0-9]+)\s*-\s*Mean SINR:\s*([\-0-9]*\.?[0-9]+)\s*dB",
+        text,
+    ):
         layer_idx = int(m.group(1))
         mean_sinr = float(m.group(2))
         out[f"Layer {layer_idx} - Mean SINR"] = mean_sinr
 
     # --- Per-layer EVM metrics: average across all slots ---
-    # Log line format (one per layer per slot):
-    #   Slot  N | Layer L | RMS EVM = X% | Peak EVM = Y% | Avg EVM = Z dB | Peak EVM = W dB | Avg MER = V dB
     evm_pattern = re.compile(
         r"Slot\s+\d+\s*\|\s*Layer\s+(\d+)\s*\|"
         r"\s*RMS EVM\s*=\s*([\-0-9]*\.?[0-9]+)%"
@@ -302,15 +332,18 @@ def parse_runlog(text: str, source_file: str) -> Dict[str, Any]:
         r"\s*\|\s*Avg MER\s*=\s*([\-0-9]*\.?[0-9]+)\s*dB"
     )
 
-    # Accumulate per-layer lists
     evm_accum: Dict[int, Dict[str, List[float]]] = {}
     for m in evm_pattern.finditer(text):
         lyr = int(m.group(1))
         if lyr not in evm_accum:
             evm_accum[lyr] = {
-                "rms_pct": [], "peak_pct": [],
-                "avg_db": [], "peak_db": [], "mer_db": []
+                "rms_pct": [],
+                "peak_pct": [],
+                "avg_db": [],
+                "peak_db": [],
+                "mer_db": [],
             }
+
         evm_accum[lyr]["rms_pct"].append(float(m.group(2)))
         evm_accum[lyr]["peak_pct"].append(float(m.group(3)))
         evm_accum[lyr]["avg_db"].append(float(m.group(4)))
@@ -318,15 +351,17 @@ def parse_runlog(text: str, source_file: str) -> Dict[str, Any]:
         evm_accum[lyr]["mer_db"].append(float(m.group(6)))
 
     import statistics
+
     for lyr, vals in evm_accum.items():
         prefix = f"L{lyr}"
-        out[f"{prefix} RMS EVM (%)"]   = statistics.mean(vals["rms_pct"])
-        out[f"{prefix} Peak EVM (%)"]  = statistics.mean(vals["peak_pct"])
-        out[f"{prefix} Avg EVM (dB)"]  = statistics.mean(vals["avg_db"])
+        out[f"{prefix} RMS EVM (%)"] = statistics.mean(vals["rms_pct"])
+        out[f"{prefix} Peak EVM (%)"] = statistics.mean(vals["peak_pct"])
+        out[f"{prefix} Avg EVM (dB)"] = statistics.mean(vals["avg_db"])
         out[f"{prefix} Peak EVM (dB)"] = statistics.mean(vals["peak_db"])
-        out[f"{prefix} Avg MER (dB)"]  = statistics.mean(vals["mer_db"])
+        out[f"{prefix} Avg MER (dB)"] = statistics.mean(vals["mer_db"])
 
     out["Source File"] = os.path.basename(source_file)
+
     return out
 
 
@@ -337,18 +372,71 @@ def ensure_columns(df: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
     return df
 
 
+def normalize_legacy_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Normalize older Excel output headers to the current names.
+
+    This lets the script append to older workbooks that still contain:
+      - Final BLER % (post-HARQ)
+
+    without creating duplicate old/new BLER columns.
+    """
+    legacy_to_current = {
+        "Final BLER % (post-HARQ)": "Final BLER %",
+    }
+
+    for old_col, new_col in legacy_to_current.items():
+        if old_col in df.columns and new_col not in df.columns:
+            df = df.rename(columns={old_col: new_col})
+        elif old_col in df.columns and new_col in df.columns:
+            df[new_col] = df[new_col].combine_first(df[old_col])
+            df = df.drop(columns=[old_col])
+
+    return df
+
+
+def apply_risk_values(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Fill Retransmission Risk and Latency Risk directly from Modulation.
+
+    This avoids Excel rewriting formulas as =@SWITCH(...).
+    """
+    required_cols = {"Modulation", "Retransmission Risk", "Latency Risk"}
+    if not required_cols.issubset(df.columns):
+        return df
+
+    retransmission_risk_map = {
+        "QPSK": 0.1,
+        "16QAM": 0.25,
+        "64QAM": 0.5,
+        "256QAM": 0.8,
+        "1024QAM": 1.0,
+    }
+
+    latency_risk_map = {
+        "QPSK": 0.05,
+        "16QAM": 0.15,
+        "64QAM": 0.4,
+        "256QAM": 0.75,
+        "1024QAM": 1.0,
+    }
+
+    df["Retransmission Risk"] = df["Modulation"].map(retransmission_risk_map)
+    df["Latency Risk"] = df["Modulation"].map(latency_risk_map)
+
+    return df
+
+
 def normalize_excel_path(excel_path: str, excel_name: str) -> str:
     """
-    If excel_path is a directory (e.g. "."), create a default filename inside it.
+    If excel_path is a directory, create a default filename inside it.
     Also ensure .xlsx extension.
     """
     p = os.path.expanduser(excel_path)
 
-    # If they passed a directory, create default filename inside it
     if os.path.isdir(p):
         p = os.path.join(p, excel_name)
 
-    # If they passed something without extension, add .xlsx
     if not p.lower().endswith(".xlsx"):
         p = p + ".xlsx"
 
@@ -357,19 +445,43 @@ def normalize_excel_path(excel_path: str, excel_name: str) -> str:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("-d", "--log_dir", required=True, help="Directory containing runlog_*.txt files")
-    ap.add_argument("-ex", "--excel_path", required=True, help="Path to output .xlsx OR a directory like '.'")
-    ap.add_argument("-fname", "--excel_name", default="runlog_results.xlsx", help="Excel file name")
-    ap.add_argument("-sn", "--sheet", default="Results", help="Worksheet name")
-    ap.add_argument("--pattern", default="*.txt", help="Glob pattern inside log_dir")
+    ap.add_argument(
+        "-d",
+        "--log_dir",
+        required=True,
+        help="Directory containing runlog_*.txt files",
+    )
+    ap.add_argument(
+        "-ex",
+        "--excel_path",
+        required=True,
+        help="Path to output .xlsx OR a directory like '.'",
+    )
+    ap.add_argument(
+        "-fname",
+        "--excel_name",
+        default="runlog_results.xlsx",
+        help="Excel file name",
+    )
+    ap.add_argument(
+        "-sn",
+        "--sheet",
+        default="Results",
+        help="Worksheet name",
+    )
+    ap.add_argument(
+        "--pattern",
+        default="*.txt",
+        help="Glob pattern inside log_dir",
+    )
     ap.add_argument(
         "--dedupe",
         action="store_true",
         help="If set, avoid appending rows whose (Source File, Timestamp) already exist in Excel.",
     )
+
     args = ap.parse_args()
 
-    # Normalize paths so "." works reliably
     args.log_dir = os.path.abspath(os.path.expanduser(args.log_dir))
     args.excel_path = normalize_excel_path(args.excel_path, args.excel_name)
 
@@ -384,20 +496,35 @@ def main():
         rows.append(parse_runlog(txt, fp))
 
     new_df = pd.DataFrame(rows)
+    new_df = normalize_legacy_columns(new_df)
 
-    # Determine all columns (base + trace + any Layer SINR columns found)
+    # Determine dynamic Layer SINR columns.
     layer_sinr_cols = sorted(
-        [c for c in new_df.columns if c.startswith("Layer ") and c.endswith(" - Mean SINR")],
+        [
+            c
+            for c in new_df.columns
+            if c.startswith("Layer ") and c.endswith(" - Mean SINR")
+        ],
         key=lambda x: int(re.search(r"Layer\s+([0-9]+)", x).group(1)),
     )
 
-    # Per-layer EVM columns: group by layer number, then metric order within each layer
-    evm_metric_order = ["RMS EVM (%)", "Peak EVM (%)", "Avg EVM (dB)", "Peak EVM (dB)", "Avg MER (dB)"]
-    layer_nums = sorted(set(
-        int(re.search(r"L(\d+)", c).group(1))
-        for c in new_df.columns
-        if re.match(r"L\d+ (RMS|Peak|Avg)", c)
-    ))
+    # Determine dynamic per-layer EVM columns.
+    evm_metric_order = [
+        "RMS EVM (%)",
+        "Peak EVM (%)",
+        "Avg EVM (dB)",
+        "Peak EVM (dB)",
+        "Avg MER (dB)",
+    ]
+
+    layer_nums = sorted(
+        set(
+            int(re.search(r"L(\d+)", c).group(1))
+            for c in new_df.columns
+            if re.match(r"L\d+ (RMS|Peak|Avg)", c)
+        )
+    )
+
     layer_evm_cols = [
         f"L{lyr} {metric}"
         for lyr in layer_nums
@@ -408,31 +535,48 @@ def main():
     all_cols = TRACE_COLUMNS + BASE_COLUMNS + layer_sinr_cols + layer_evm_cols
 
     new_df = ensure_columns(new_df, all_cols)
-    new_df = new_df[all_cols]  # order columns
+    new_df = new_df[all_cols]
 
-    # Append to existing Excel or create new
+    # Append to existing Excel or create new.
     if os.path.isfile(args.excel_path):
-        existing = pd.read_excel(args.excel_path, sheet_name=args.sheet, engine="openpyxl")
+        existing = pd.read_excel(
+            args.excel_path,
+            sheet_name=args.sheet,
+            engine="openpyxl",
+        )
+
+        existing = normalize_legacy_columns(existing)
         existing = ensure_columns(existing, all_cols)
 
         if args.dedupe and {"Source File", "Timestamp"}.issubset(existing.columns):
-            key_existing = set(zip(existing["Source File"].astype(str), existing["Timestamp"].astype(str)))
+            key_existing = set(
+                zip(
+                    existing["Source File"].astype(str),
+                    existing["Timestamp"].astype(str),
+                )
+            )
+
             mask_keep = []
             for _, r in new_df.iterrows():
                 k = (str(r["Source File"]), str(r["Timestamp"]))
                 mask_keep.append(k not in key_existing)
+
             new_df = new_df[pd.Series(mask_keep).values]
 
         combined = pd.concat([existing, new_df], ignore_index=True)
     else:
         combined = new_df
 
-    # Ensure output directory exists (in case they pass something like ./out/results.xlsx)
+    # Re-normalize, reorder, and fill risk values.
+    combined = normalize_legacy_columns(combined)
+    combined = ensure_columns(combined, all_cols)
+    combined = combined[all_cols]
+    combined = apply_risk_values(combined)
+
     out_dir = os.path.dirname(os.path.abspath(args.excel_path))
     if out_dir and not os.path.exists(out_dir):
         os.makedirs(out_dir, exist_ok=True)
 
-    # Write back (replace sheet)
     with pd.ExcelWriter(args.excel_path, engine="openpyxl", mode="w") as xw:
         combined.to_excel(xw, sheet_name=args.sheet, index=False)
 
