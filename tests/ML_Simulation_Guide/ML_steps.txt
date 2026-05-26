@@ -1,0 +1,21 @@
+Retransmission Rate / Throughput 
+
+record steps for process to generate data 
+
+------------------------------------------
+modify # of workers in run_sweep_parallel
+modify # of slots in NR_sim_parallel
+
+run_sweep_parallel -> generates logs/, figures/, and a sweep_results_parallel.mat
+
+log_to_excel on logs/ directory generates runlog_results
+	python3 -m log_to_excel_v2 -d logs/ -ex .
+add columns for 'Retransmission Risk' and 'Latency Risk' to runlog_results and save as runlog_results_ML
+	=SWITCH(D2,"QPSK",0.1,"16QAM",0.25,"64QAM",0.5,"256QAM",0.8,"1024QAM",1,"")	
+	=SWITCH(D2,"QPSK",0.05,"16QAM",0.15,"64QAM",0.4,"256QAM",0.75,"1024QAM",1,"")
+trainML_extended
+	python3 -m trainML_extended
+combine_results -> use baseline_file as runlog_results_ML with risks, ml_file from trainML_extended, and output file as combined_results 
+	python3 -m combine_results
+make_charts
+	python3 -m make_charts --excel combined_results.xlsx --config charts.yml
